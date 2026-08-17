@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {"source": "/api/:path*", "destination": "https://YOUR-API.onrender.com/api/:path*"},
+    {"source": "/robots.txt", "destination": "https://YOUR-API.onrender.com/api/robots.txt"},
+    {"source": "/sitemap.xml", "destination": "https://YOUR-API.onrender.com/api/sitemap.xml"}
+  ],
+  "headers": [
+    {"source": "/static/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=86400"}]},
+    {"source": "/admin", "headers": [{"key": "X-Robots-Tag", "value": "noindex, nofollow"}]}
+  ]
+}

@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: boom-portfolio-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FRONTEND_PUBLIC_URL
+        sync: false
+      - key: BACKEND_PUBLIC_URL
+        sync: false
+      - key: GOOGLE_DRIVE_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: OAUTH_STATE_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false

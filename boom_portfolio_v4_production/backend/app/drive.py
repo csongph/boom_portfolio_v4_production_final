@@ -1,0 +1,50 @@
+import re
+import httpx
+from fastapi import HTTPException
+from .config import get_settings
+from .integrations import google_access_token
+
+API="https://www.googleapis.com/drive/v3"
+
+def folder_id_from(value: str) -> str:
+    value=value.strip()
+    for pattern in (r"/folders/([A-Za-z0-9_-]+)",r"[?&]id=([A-Za-z0-9_-]+)"):
+        m=re.search(pattern,value)
+        if m:return m.group(1)
+    if re.fullmatch(r"[A-Za-z0-9_-]{10,}",value): return value
+    raise HTTPException(400,"ไม่พบ Google Drive Folder ID ในลิงก์นี้")
+
+async def _auth(admin_email: str | None = None):
+    if admin_email:
+        token=await google_access_token(admin_email)
+        if token:return {"headers":{"Authorization":f"Bearer {token}"},"params":{}}
+    key=get_settings().google_drive_api_key
+    if not key: raise HTTPException(503,"Google Drive API key หรือ Google OAuth ยังไม่ได้ตั้งค่า")
+    return {"headers":{},"params":{"key":key}}
+
+async def list_images(folder_id: str, admin_email: str | None = None):
+    auth=await _auth(admin_email)
+    params={**auth["params"],"q":f"'{folder_id}' in parents and trashed = false","fields":"nextPageToken,files(id,name,mimeType,imageMediaMetadata,createdTime,modifiedTime)","pageSize":1000,"orderBy":"name"}
+    out=[]; token=None
+    async with httpx.AsyncClient(timeout=30) as client:
+        while True:
+            if token: params["pageToken"]=token
+            r=await client.get(f"{API}/files",params=params,headers=auth["headers"])
+            if r.status_code in (401,403,404): raise HTTPException(400,"อ่าน Google Drive ไม่ได้ ตรวจสอบสิทธิ์โฟลเดอร์หรือเชื่อม Google Drive ใน Admin")
+            if r.is_error: raise HTTPException(502,f"Google Drive API error: {r.text[:250]}")
+            data=r.json()
+            for f in data.get("files",[]):
+                if not f.get("mimeType","").startswith("image/"):continue
+                meta=f.get("imageMediaMetadata") or {}
+                out.append({"id":f["id"],"name":f.get("name","Untitled"),"mime_type":f.get("mimeType","image/jpeg"),"width":meta.get("width"),"height":meta.get("height")})
+            token=data.get("nextPageToken")
+            if not token:break
+    return out
+
+async def image_bytes(file_id: str, admin_email: str | None = None):
+    auth=await _auth(admin_email)
+    params={**auth["params"],"alt":"media"}
+    async with httpx.AsyncClient(timeout=60,follow_redirects=True) as client:
+        r=await client.get(f"{API}/files/{file_id}",params=params,headers=auth["headers"])
+    if r.is_error: raise HTTPException(r.status_code,"โหลดรูปจาก Google Drive ไม่สำเร็จ")
+    return r.content,r.headers.get("content-type","image/jpeg")
