@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="stream-container">
+  {% if posts|length == 0 %}
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg><use href="#icon-create"></use></svg>
+      </div>
+      <h3 class="empty-state-title">ยังไม่มีโพสต์</h3>
+      <p class="empty-state-desc">เริ่มแชร์เรื่องราวของคุณกันเถอะ — Your images. Your story.</p>
+      <button class="btn-accent btn-create-trigger">
+        <svg class="btn-icon"><use href="#icon-create"></use></svg>
+        <span>+ สร้างโพสต์</span>
+      </button>
+    </div>
+  {% else %}
+
+    <!-- Stream Cards Stream -->
+    <div class="story-stream">
+      {% for p in posts %}
+      <article class="story-card" data-post-id="{{ p.id }}">
+        <!-- Story Canvas Header -->
+        <header class="story-header">
+          <a href="/user/{{ p.username }}" class="creator-badge">
+            <div class="creator-avatar">
+              <img src="{{ p.user_avatar }}" alt="{{ p.username }}">
+            </div>
+            <div class="creator-meta">
+              <span class="creator-name">{{ p.username }}</span>
+              {% if p.location %}<span class="story-location">• {{ p.location }}</span>{% endif %}
+            </div>
+          </a>
+          <span class="story-timestamp">{{ p.time_ago }}</span>
+        </header>
+
+        <!-- Media Display (Single Image / Carousel) -->
+        <div class="story-media-canvas {% if p.layout_style %}layout-{{ p.layout_style }}{% endif %}" data-post-id="{{ p.id }}">
+          {% if p.images|length == 1 %}
+            <div class="single-canvas-frame double-tap-target">
+              <img src="{{ p.images[0].filename }}" alt="{{ p.title or 'Story image' }}" loading="lazy">
+              <div class="heart-burst-overlay"><svg><use href="#icon-spark"></use></svg></div>
+            </div>
+          {% elif p.images|length > 1 %}
+            <div class="carousel-container double-tap-target" id="carousel-{{ p.id }}">
+              <div class="carousel-track">
+                {% for img in p.images %}
+                <div class="carousel-slide">
+                  <img src="{{ img.filename }}" alt="{{ p.title or 'Story image' }}" loading="lazy">
+                </div>
+                {% endfor %}
+              </div>
+
+              <button class="carousel-nav prev" aria-label="Previous image">&lsaquo;</button>
+              <button class="carousel-nav next" aria-label="Next image">&rsaquo;</button>
+
+              <div class="carousel-indicators">
+                {% for img in p.images %}
+                <span class="indicator-dot {% if loop.first %}active{% endif %}"></span>
+                {% endfor %}
+              </div>
+
+              <div class="heart-burst-overlay"><svg><use href="#icon-spark"></use></svg></div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Story Action & Info Panel -->
+        <div class="story-footer-panel">
+          <div class="story-action-row">
+            <div class="action-buttons-group">
+              <button class="story-btn btn-like {% if p.is_liked %}liked{% endif %}" data-post-id="{{ p.id }}" title="Appreciate">
+                <svg class="story-icon"><use href="#icon-spark"></use></svg>
+                <span class="story-btn-count" id="likes-count-{{ p.id }}">{{ p.likes_count }}</span>
+              </button>
+
+              <button class="story-btn btn-comment-focus" data-post-id="{{ p.id }}" title="Comments">
+                <svg class="story-icon"><use href="#icon-notes"></use></svg>
+                <span class="story-btn-count">{{ p.comments|length }}</span>
+              </button>
+
+              <button class="story-btn btn-share" data-post-id="{{ p.id }}" title="Export / Share">
+                <svg class="story-icon"><use href="#icon-share"></use></svg>
+              </button>
+            </div>
+
+            <button class="story-btn btn-save {% if p.is_saved %}saved{% endif %}" data-post-id="{{ p.id }}" title="Archive to Collection">
+              <svg class="story-icon"><use href="#icon-archive"></use></svg>
+            </button>
+          </div>
+
+          <!-- Description & Tags -->
+          <div class="story-body-content">
+            {% if p.title %}<h3 class="story-title">{{ p.title }}</h3>{% endif %}
+            <p class="story-text">{{ p.caption }}</p>
+
+            {% if p.tags %}
+            <div class="story-tags">
+              {% for tag in p.tags.split(',') %}
+              <a href="/explore?q={{ tag.strip() }}" class="story-tag-pill">#{{ tag.strip() }}</a>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Comments Section -->
+          <div class="story-notes-section" id="comments-block-{{ p.id }}">
+            {% if p.comments|length > 2 %}
+              <button class="btn-toggle-comments" data-post-id="{{ p.id }}">View all {{ p.comments|length }} notes</button>
+            {% endif %}
+
+            <div class="comments-list" id="comments-list-{{ p.id }}">
+              {% for c in p.comments %}
+              <div class="comment-item {% if loop.index > 2 %}comment-hidden{% endif %}">
+                <div class="comment-avatar">
+                  <img src="{{ c.user_avatar }}" alt="{{ c.username }}">
+                </div>
+                <div class="comment-content">
+                  <span class="comment-user">${c.username}</span>
+                  <span class="comment-text">${c.text}</span>
+                  <span class="comment-time">${c.time_ago}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <form class="inline-comment-form" data-post-id="{{ p.id }}">
+              <input type="text" name="text" class="comment-input" placeholder="Add a note or thought..." required autocomplete="off">
+              <button type="submit" class="btn-comment-submit">Send</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

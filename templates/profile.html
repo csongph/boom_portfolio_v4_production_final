@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+  <!-- Studio Profile Header Card -->
+  <header class="profile-header-card">
+    <div class="profile-avatar-wrap">
+      <img src="{{ user_info.avatar }}" alt="{{ user_info.username }}" class="profile-avatar-img">
+    </div>
+
+    <div class="profile-meta">
+      <div class="profile-title-row">
+        <h2 class="profile-username">{{ user_info.username }}</h2>
+        {% if user_info.is_self %}
+          <a href="/admin" class="btn-outline">Edit Studio</a>
+        {% else %}
+          <button class="btn-primary btn-follow-toggle">Subscribe</button>
+        {% endif %}
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-box">
+          <span class="stat-number">{{ user_info.posts_count }}</span>
+          <span class="stat-label">Stories</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number">{{ user_info.followers_count }}</span>
+          <span class="stat-label">Subscribers</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number">{{ user_info.following_count }}</span>
+          <span class="stat-label">Following</span>
+        </div>
+      </div>
+
+      <div class="profile-bio-block">
+        <h4 class="profile-display-name">{{ user_info.display_name }}</h4>
+        <p class="profile-bio-text">{{ user_info.bio }}</p>
+        {% if user_info.website %}
+          <a href="https://{{ user_info.website }}" target="_blank" rel="noopener" class="profile-website-link">
+            🌐 {{ user_info.website }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Studio Tabs (Stories Grid / Archives) -->
+  <nav class="profile-tabs">
+    <button class="tab-btn active" data-tab="posts">
+      <svg class="tab-icon"><use href="#icon-stream"></use></svg>
+      <span>STORIES</span>
+    </button>
+
+    {% if user_info.is_self %}
+    <button class="tab-btn" data-tab="saved">
+      <svg class="tab-icon"><use href="#icon-archive"></use></svg>
+      <span>ARCHIVES</span>
+    </button>
+    {% endif %}
+  </nav>
+
+  <!-- Profile Content Tabs -->
+  <div class="profile-tab-content active" id="tab-posts">
+    {% if posts|length == 0 %}
+      <div class="empty-state">
+        <h3 class="empty-state-title">ยังไม่มีโพสต์</h3>
+        <p class="empty-state-desc">เริ่มแชร์เรื่องราวของคุณกันเถอะ</p>
+        {% if user_info.is_self %}
+        <button class="btn-accent btn-create-trigger">+ สร้างโพสต์</button>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="profile-photo-grid">
+        {% for p in posts %}
+        <div class="photo-grid-item" data-post-id="{{ p.id }}">
+          {% if p.images|length > 0 %}
+          <img src="{{ p.images[0].filename }}" alt="{{ p.title or 'Story image' }}" loading="lazy">
+          {% endif %}
+          
+          {% if p.images|length > 1 %}
+          <div class="multi-image-badge">
+            <svg><use href="#icon-stream"></use></svg>
+          </div>
+          {% endif %}
+
+          <div class="photo-grid-overlay">
+            <div class="grid-overlay-stats">
+              <span><svg><use href="#icon-spark"></use></svg> {{ p.likes_count }}</span>
+              <span><svg><use href="#icon-notes"></use></svg> {{ p.comments|length }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if user_info.is_self %}
+  <div class="profile-tab-content" id="tab-saved" style="display: none;">
+    {% if saved_posts|length == 0 %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><svg><use href="#icon-archive"></use></svg></div>
+        <h3 class="empty-state-title">ยังไม่มีรูปที่บันทึกไว้</h3>
+        <p class="empty-state-desc">เก็บรูปที่คุณชอบไว้ที่นี่</p>
+      </div>
+    {% else %}
+      <div class="profile-photo-grid">
+        {% for sp in saved_posts %}
+        <div class="photo-grid-item" data-post-id="{{ sp.id }}">
+          <img src="{{ sp.cover_image }}" alt="{{ sp.title or 'Archived story' }}" loading="lazy">
+          <div class="photo-grid-overlay">
+            <div class="grid-overlay-stats">
+              <span><svg><use href="#icon-archive"></use></svg> Archived</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="activity-container">
+  <header class="page-header">
+    <h2 class="section-title">Pulse</h2>
+    <p class="section-subtitle">Community highlights, sparks, and notes.</p>
+  </header>
+
+  {% if activities|length == 0 %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><svg><use href="#icon-pulse"></use></svg></div>
+      <h3 class="empty-state-title">No recent pulse activity</h3>
+      <p class="empty-state-desc">When creators appreciate or note on your stories, updates will appear here.</p>
+    </div>
+  {% else %}
+    <div class="activity-list">
+      {% for act in activities %}
+      <div class="activity-item">
+        <div class="activity-actor-avatar">
+          <img src="{{ act.actor_avatar }}" alt="{{ act.actor_name }}">
+          <div class="activity-type-badge type-{{ act.type }}">
+            {% if act.type == 'like' %}
+              <svg><use href="#icon-spark"></use></svg>
+            {% elif act.type == 'comment' %}
+              <svg><use href="#icon-notes"></use></svg>
+            {% elif act.type == 'save' %}
+              <svg><use href="#icon-archive"></use></svg>
+            {% else %}
+              <svg><use href="#icon-studio"></use></svg>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="activity-details">
+          <p class="activity-text">
+            <span class="actor-name">{{ act.actor_name }}</span>
+            {{ act.message }}
+          </p>
+          <span class="activity-time">{{ act.time_ago }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

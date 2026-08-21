@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{% block title %}{{ site_title }}{% endblock %} — Creative Photo Platform</title>
+  <meta name="description" content="Your images. Your story. A premium, minimal creative photo sharing platform.">
+  
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('verve_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Custom Icon Sprite System -->
+  <svg style="display: none;">
+    <defs>
+      <g id="icon-logo">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M12 3l3.5 5.5h-7zM18.8 8l-2 6.2-5.5-3.5zM17.5 17.5l-6.2-2 3.5-5.5zM8 18.8l-5.5-3.5 6.2-2zM5.2 11.8l6.2-2-3.5 5.5z" fill="currentColor" opacity="0.3"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      </g>
+      <g id="icon-stream">
+        <rect x="3" y="4" width="18" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M7 20h10M12 16v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </g>
+      <g id="icon-discover">
+        <path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+      </g>
+      <g id="icon-create">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </g>
+      <g id="icon-archive">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </g>
+      <g id="icon-pulse">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <g id="icon-studio">
+        <rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M6 18c0-2.5 2.5-4 6-4s6 1.5 6 4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      </g>
+      <g id="icon-spark">
+        <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </g>
+      <g id="icon-notes">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </g>
+      <g id="icon-share">
+        <circle cx="18" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="currentColor" stroke-width="1.8"/>
+      </g>
+      <g id="icon-sun">
+        <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2" stroke="currentColor" stroke-width="1.8"/>
+      </g>
+      <g id="icon-moon">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      </g>
+      <g id="icon-wand">
+        <path d="M15 4l-2.4 5.3L7.3 11.7l5.3 2.4L15 19.4l2.4-5.3 5.3-2.4-5.3-2.4z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      </g>
+    </defs>
+  </svg>
+
+  <div class="app-layout">
+    <!-- Desktop Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="brand-logo">
+          <svg class="brand-icon"><use href="#icon-logo"></use></svg>
+          <span class="brand-name">{{ site_title }}</span>
+        </a>
+        <span class="brand-tagline">Visual Storytelling & Canvas</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item {% if active_page == 'home' %}active{% endif %}">
+          <svg class="nav-icon"><use href="#icon-stream"></use></svg>
+          <span class="nav-label">Stream</span>
+        </a>
+
+        <a href="/explore" class="nav-item {% if active_page == 'explore' %}active{% endif %}">
+          <svg class="nav-icon"><use href="#icon-discover"></use></svg>
+          <span class="nav-label">Discover</span>
+        </a>
+
+        <button class="nav-item btn-create-trigger" id="btnCreateTriggerDesktop">
+          <svg class="nav-icon"><use href="#icon-create"></use></svg>
+          <span class="nav-label">+ New Story</span>
+        </button>
+
+        <a href="/collections" class="nav-item {% if active_page == 'collections' %}active{% endif %}">
+          <svg class="nav-icon"><use href="#icon-archive"></use></svg>
+          <span class="nav-label">Archives</span>
+        </a>
+
+        <a href="/activity" class="nav-item {% if active_page == 'activity' %}active{% endif %}">
+          <svg class="nav-icon"><use href="#icon-pulse"></use></svg>
+          <span class="nav-label">Pulse</span>
+        </a>
+
+        <a href="/profile" class="nav-item {% if active_page == 'profile' %}active{% endif %}">
+          <svg class="nav-icon"><use href="#icon-studio"></use></svg>
+          <span class="nav-label">Studio</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+          <svg class="theme-icon icon-sun"><use href="#icon-sun"></use></svg>
+          <svg class="theme-icon icon-moon"><use href="#icon-moon"></use></svg>
+          <span class="theme-label">Theme</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Top Header Bar -->
+    <header class="mobile-header">
+      <a href="/" class="brand-logo">
+        <svg class="brand-icon"><use href="#icon-logo"></use></svg>
+        <span class="brand-name">{{ site_title }}</span>
+      </a>
+      <button class="theme-toggle-btn-compact" id="themeToggleBtnMobile" aria-label="Toggle Theme">
+        <svg class="theme-icon icon-sun"><use href="#icon-sun"></use></svg>
+        <svg class="theme-icon icon-moon"><use href="#icon-moon"></use></svg>
+      </button>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+      <a href="/" class="mobile-nav-item {% if active_page == 'home' %}active{% endif %}" aria-label="Stream">
+        <svg class="mobile-nav-icon"><use href="#icon-stream"></use></svg>
+      </a>
+
+      <a href="/explore" class="mobile-nav-item {% if active_page == 'explore' %}active{% endif %}" aria-label="Discover">
+        <svg class="mobile-nav-icon"><use href="#icon-discover"></use></svg>
+      </a>
+
+      <button class="mobile-nav-item btn-create-trigger" id="btnCreateTriggerMobile" aria-label="New Story">
+        <div class="mobile-create-fab">
+          <svg class="mobile-nav-icon"><use href="#icon-create"></use></svg>
+        </div>
+      </button>
+
+      <a href="/activity" class="mobile-nav-item {% if active_page == 'activity' %}active{% endif %}" aria-label="Pulse">
+        <svg class="mobile-nav-icon"><use href="#icon-pulse"></use></svg>
+      </a>
+
+      <a href="/profile" class="mobile-nav-item {% if active_page == 'profile' %}active{% endif %}" aria-label="Studio">
+        <svg class="mobile-nav-icon"><use href="#icon-studio"></use></svg>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Create Story Wizard Modal -->
+  <div class="modal-overlay" id="createModalOverlay">
+    <div class="modal-card create-modal-card">
+      <header class="modal-header">
+        <button class="btn-modal-back" id="btnCreateBack" style="display:none;">&larr; Back</button>
+        <h3 class="modal-title" id="createModalTitle">Create Story</h3>
+        <button class="btn-modal-close" id="btnCreateClose">&times;</button>
+      </header>
+
+      <div class="create-modal-body">
+        <div class="create-step active" id="createStep1">
+          <div class="upload-dropzone" id="uploadDropzone">
+            <svg class="upload-icon"><use href="#icon-create"></use></svg>
+            <h4 class="upload-heading">Select images for your story</h4>
+            <p class="upload-subtext">Drag & drop photos or select from your device</p>
+            <input type="file" id="fileInput" multiple accept="image/*" class="file-input-hidden">
+            <button class="btn-primary" id="btnChooseFiles">Browse Images</button>
+          </div>
+          <div class="selected-files-list" id="selectedFilesList"></div>
+        </div>
+
+        <div class="create-step" id="createStep2">
+          <div class="smart-arrange-banner">
+            <div class="banner-badge">
+              <svg class="wand-icon"><use href="#icon-wand"></use></svg>
+              <span>Smart Layout Assistant</span>
+            </div>
+            <h4 class="banner-heading" id="smartArrangeHeading">We found a layout for your story.</h4>
+            <p class="banner-subtext" id="smartArrangeSubtext">เราเจอองค์ประกอบที่เหมาะกับรูปของคุณแล้ว</p>
+            <div class="banner-actions">
+              <button class="btn-accent" id="btnApplySmartLayout">✨ ใช้ Layout นี้</button>
+            </div>
+          </div>
+
+          <div class="layout-options-grid" id="layoutOptionsGrid"></div>
+        </div>
+
+        <div class="create-step" id="createStep3">
+          <div class="customize-toolbar">
+            <span class="toolbar-label">Canvas Format:</span>
+            <div class="preset-pills">
+              <button class="preset-pill active" data-ratio="4:5">Portrait (4:5)</button>
+              <button class="preset-pill" data-ratio="1:1">Square (1:1)</button>
+              <button class="preset-pill" data-ratio="16:9">Wide (16:9)</button>
+              <button class="preset-pill" data-ratio="original">Original</button>
+            </div>
+          </div>
+          <div class="image-arrangement-preview" id="imageArrangementPreview"></div>
+        </div>
+
+        <div class="create-step" id="createStep4">
+          <div class="create-details-form">
+            <div class="form-group">
+              <label class="form-label" for="postTitleInput">Story Title</label>
+              <input type="text" id="postTitleInput" class="form-input" placeholder="Name your visual story...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="postCaptionInput">Story Description</label>
+              <textarea id="postCaptionInput" class="form-textarea" rows="3" placeholder="Write thoughts, context, or technical details..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="postTagsInput">Tags</label>
+              <input type="text" id="postTagsInput" class="form-input" placeholder="minimal, editorial, architecture">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="postLocationInput">Location / Series</label>
+              <input type="text" id="postLocationInput" class="form-input" placeholder="Bangkok, Thailand">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" id="btnCreatePrev" style="display:none;">Previous</button>
+        <button class="btn-primary" id="btnCreateNext">Continue &rarr;</button>
+        <button class="btn-accent" id="btnCreatePublish" style="display:none;">Publish Story</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Quick Lightbox -->
+  <div class="modal-overlay" id="lightboxOverlay">
+    <div class="lightbox-content">
+      <button class="lightbox-close-btn" id="lightboxCloseBtn">&times;</button>
+      <div class="lightbox-body">
+        <div class="lightbox-img-wrap">
+          <img id="lightboxImg" src="" alt="Full view">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/gallery.js"></script>
+</body>
+</html>

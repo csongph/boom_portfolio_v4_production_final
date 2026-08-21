@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="explore-container">
+  <header class="explore-header">
+    <h2 class="section-title">Discover</h2>
+    <p class="section-subtitle">Curated visual stories & photography highlights.</p>
+    
+    <form action="/explore" method="GET" class="search-bar-form">
+      <div class="search-input-wrap">
+        <svg class="search-icon"><use href="#icon-discover"></use></svg>
+        <input type="text" name="q" class="search-input" placeholder="Search stories, creators, medium..." value="{{ search_query }}">
+      </div>
+    </form>
+
+    <div class="category-pills">
+      {% for cat in categories %}
+      <a href="/explore?category={{ cat }}" class="category-pill {% if selected_category == cat %}active{% endif %}">
+        {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+  </header>
+
+  {% if posts|length == 0 %}
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg><use href="#icon-discover"></use></svg>
+      </div>
+      <h3 class="empty-state-title">No matching stories found</h3>
+      <p class="empty-state-desc">Explore other creative categories or search terms.</p>
+      <a href="/explore" class="btn-primary">View All Discoveries</a>
+    </div>
+  {% else %}
+    <div class="explore-masonry-grid">
+      {% for p in posts %}
+      <div class="masonry-item" data-post-id="{{ p.id }}">
+        <div class="masonry-card">
+          {% if p.images|length > 0 %}
+          <img src="{{ p.images[0].filename }}" alt="{{ p.title or 'Story image' }}" loading="lazy">
+          {% endif %}
+          
+          <div class="masonry-overlay">
+            <div class="overlay-meta">
+              <span class="overlay-user">@{{ p.username }}</span>
+              <div class="overlay-stats">
+                <span class="stat-item"><svg><use href="#icon-spark"></use></svg> {{ p.likes_count }}</span>
+                <span class="stat-item"><svg><use href="#icon-notes"></use></svg> {{ p.comments|length }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

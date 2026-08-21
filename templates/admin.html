@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container">
+  <header class="page-header admin-page-header">
+    <div>
+      <h2 class="section-title">Creator Studio Management</h2>
+      <p class="section-subtitle">Manage your published visual stories, frames, and settings.</p>
+    </div>
+    <div class="admin-header-actions">
+      <a href="/" class="btn-outline">View Stream</a>
+      <a href="/admin/logout" class="btn-secondary">Log Out</a>
+    </div>
+  </header>
+
+  {% if error %}
+    <div class="login-error-alert" style="margin-bottom: 20px;">
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+
+  <!-- Quick Upload Panel -->
+  <section class="admin-section-card">
+    <h3 class="admin-card-title">Publish New Frame / Story</h3>
+    <form method="post" action="/admin/upload" enctype="multipart/form-data" class="admin-upload-form">
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label for="file" class="form-label">Image file</label>
+          <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.webp,.gif" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="title" class="form-label">Title</label>
+          <input type="text" id="title" name="title" class="form-input" placeholder="Untitled Story">
+        </div>
+        <div class="form-group">
+          <label for="caption" class="form-label">Caption / Context</label>
+          <textarea id="caption" name="caption" class="form-textarea" rows="2" placeholder="Story details..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="tags" class="form-label">Tags (comma separated)</label>
+          <input type="text" id="tags" name="tags" class="form-input" placeholder="architecture, minimal, street">
+        </div>
+      </div>
+      <button class="btn-accent" type="submit">Upload & Publish</button>
+    </form>
+  </section>
+
+  <!-- Published Stories Table -->
+  <section class="admin-section-card" style="margin-top: 28px;">
+    <h3 class="admin-card-title">Published Stories ({{ photos|length }})</h3>
+    {% if photos|length == 0 %}
+      <div class="empty-state" style="padding: 40px 20px;">
+        <p class="empty-state-desc">No published stories on your studio canvas yet.</p>
+      </div>
+    {% else %}
+      <div class="admin-stories-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Story Information</th>
+              <th>Tags</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in photos %}
+            <tr>
+              <td class="table-thumb-col">
+                {% if p.images and p.images|length > 0 %}
+                  <img src="{{ p.images[0].filename }}" alt="" class="table-thumb">
+                {% else %}
+                  <div class="table-thumb-placeholder">Frame</div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="table-story-title">{{ p.title or 'Untitled' }}</span>
+                <p class="table-story-caption">{{ p.caption }}</p>
+              </td>
+              <td>
+                <span class="table-story-tags">{{ p.tags }}</span>
+              </td>
+              <td>
+                <form method="post" action="/admin/delete/{{ p.id }}" onsubmit="return confirm('Delete this story? This cannot be undone.');">
+                  <button class="btn-danger-sm" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

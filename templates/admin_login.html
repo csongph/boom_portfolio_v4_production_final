@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-icon">
+        <svg><use href="#icon-logo"></use></svg>
+      </div>
+      <h2 class="login-title">Creator Admin Login</h2>
+      <p class="login-subtitle">Sign in to manage your studio stories and portfolio content.</p>
+    </div>
+
+    {% if error %}
+      <div class="login-error-alert" id="loginAlert">
+        <span>Incorrect password or credentials. Default password is "changeme".</span>
+      </div>
+    {% endif %}
+
+    <form method="post" action="/admin/login" class="login-form" id="adminLoginForm">
+      <div class="form-group">
+        <label for="email" class="form-label">Email (Optional)</label>
+        <input type="email" id="email" name="email" class="form-input" placeholder="chayanggoon.s13@gmail.com" value="chayanggoon.s13@gmail.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" id="password" name="password" class="form-input" placeholder="Enter password (default: changeme)" required autofocus>
+      </div>
+      
+      <button class="btn-primary btn-full-width" type="submit" id="btnSubmitLogin">
+        <span>Sign in</span>
+        &rarr;
+      </button>
+    </form>
+
+    <div class="login-footer-hint">
+      <span class="hint-text">Default admin password: <code>changeme</code></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle form submission redirect to ensure browser navigates into /admin
+  document.getElementById('adminLoginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('btnSubmitLogin');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Signing in...</span>';
+    }
+  });
+</script>
+{% endblock %}

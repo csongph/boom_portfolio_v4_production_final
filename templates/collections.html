@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="collections-container">
+  <header class="page-header">
+    <h2 class="section-title">Archives & Collections</h2>
+    <p class="section-subtitle">Curated albums, inspiration, and saved moments.</p>
+  </header>
+
+  <div class="collections-grid">
+    {% for col in collections %}
+    <div class="collection-card">
+      <div class="collection-cover">
+        {% if col.cover_image %}
+          <img src="{{ col.cover_image }}" alt="{{ col.name }}">
+        {% else %}
+          <div class="collection-placeholder">
+            <svg><use href="#icon-archive"></use></svg>
+          </div>
+        {% endif %}
+      </div>
+      <div class="collection-info">
+        <h4 class="collection-name">{{ col.name }}</h4>
+        <p class="collection-desc">{{ col.description }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <section class="saved-posts-section">
+    <h3 class="section-title-sm">All Archived Stories</h3>
+    {% if saved_posts|length == 0 %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><svg><use href="#icon-archive"></use></svg></div>
+        <h3 class="empty-state-title">ยังไม่มีรูปที่บันทึกไว้</h3>
+        <p class="empty-state-desc">เก็บรูปที่คุณชอบไว้ที่นี่</p>
+      </div>
+    {% else %}
+      <div class="profile-photo-grid">
+        {% for sp in saved_posts %}
+        <div class="photo-grid-item" data-post-id="{{ sp.id }}">
+          <img src="{{ sp.cover_image }}" alt="{{ sp.title }}" loading="lazy">
+          <div class="photo-grid-overlay">
+            <div class="grid-overlay-stats">
+              <span><svg><use href="#icon-archive"></use></svg> Archived</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
