@@ -22,23 +22,41 @@ async def _auth(admin_email: str | None = None):
     if not key: raise HTTPException(503,"Google Drive API key หรือ Google OAuth ยังไม่ได้ตั้งค่า")
     return {"headers":{},"params":{"key":key}}
 
+async def _list_folder_items(client, folder_id: str, auth: dict):
+    params={
+        **auth["params"],
+        "q":f"'{folder_id}' in parents and trashed = false",
+        "fields":"nextPageToken,files(id,name,mimeType,imageMediaMetadata,createdTime,modifiedTime)",
+        "pageSize":1000,
+        "orderBy":"name",
+        "supportsAllDrives":"true",
+        "includeItemsFromAllDrives":"true",
+    }
+    out=[]; token=None
+    while True:
+        if token: params["pageToken"]=token
+        r=await client.get(f"{API}/files",params=params,headers=auth["headers"])
+        if r.status_code in (401,403,404): raise HTTPException(400,"อ่าน Google Drive ไม่ได้ ตรวจสอบสิทธิ์โฟลเดอร์หรือเชื่อม Google Drive ใน Admin")
+        if r.is_error: raise HTTPException(502,f"Google Drive API error: {r.text[:250]}")
+        data=r.json()
+        out.extend(data.get("files",[]))
+        token=data.get("nextPageToken")
+        if not token:break
+    return out
+
 async def list_images(folder_id: str, admin_email: str | None = None):
     auth=await _auth(admin_email)
-    params={**auth["params"],"q":f"'{folder_id}' in parents and trashed = false","fields":"nextPageToken,files(id,name,mimeType,imageMediaMetadata,createdTime,modifiedTime)","pageSize":1000,"orderBy":"name"}
-    out=[]; token=None
+    out=[]; queue=[(folder_id,"")]; seen={folder_id}; max_folders=80
     async with httpx.AsyncClient(timeout=30) as client:
-        while True:
-            if token: params["pageToken"]=token
-            r=await client.get(f"{API}/files",params=params,headers=auth["headers"])
-            if r.status_code in (401,403,404): raise HTTPException(400,"อ่าน Google Drive ไม่ได้ ตรวจสอบสิทธิ์โฟลเดอร์หรือเชื่อม Google Drive ใน Admin")
-            if r.is_error: raise HTTPException(502,f"Google Drive API error: {r.text[:250]}")
-            data=r.json()
-            for f in data.get("files",[]):
-                if not f.get("mimeType","").startswith("image/"):continue
+        while queue and len(seen)<=max_folders:
+            current_id,path=queue.pop(0)
+            for f in await _list_folder_items(client,current_id,auth):
+                mime=f.get("mimeType","")
+                if mime=="application/vnd.google-apps.folder" and f["id"] not in seen:
+                    seen.add(f["id"]); queue.append((f["id"],f"{path}{f.get('name','Folder')}/")); continue
+                if not mime.startswith("image/"):continue
                 meta=f.get("imageMediaMetadata") or {}
-                out.append({"id":f["id"],"name":f.get("name","Untitled"),"mime_type":f.get("mimeType","image/jpeg"),"width":meta.get("width"),"height":meta.get("height")})
-            token=data.get("nextPageToken")
-            if not token:break
+                out.append({"id":f["id"],"name":f"{path}{f.get('name','Untitled')}","mime_type":mime or "image/jpeg","width":meta.get("width"),"height":meta.get("height")})
     return out
 
 async def image_bytes(file_id: str, admin_email: str | None = None):
