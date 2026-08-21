@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/static/uploads/(.*)",
+      "dest": "api/index.py"
+    },
+    {
       "src": "/static/(.*)",
       "dest": "/static/$1"
     },

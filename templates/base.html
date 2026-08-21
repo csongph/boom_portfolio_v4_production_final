@@ -103,10 +103,12 @@
           <span class="nav-label">Discover</span>
         </a>
 
-        <button class="nav-item btn-create-trigger" id="btnCreateTriggerDesktop">
-          <svg class="nav-icon"><use href="#icon-create"></use></svg>
-          <span class="nav-label">+ New Story</span>
-        </button>
+        {% if is_owner %}
+          <button class="nav-item btn-create-trigger" id="btnCreateTriggerDesktop">
+            <svg class="nav-icon"><use href="#icon-create"></use></svg>
+            <span class="nav-label">+ New Story</span>
+          </button>
+        {% endif %}
 
         <a href="/collections" class="nav-item {% if active_page == 'collections' %}active{% endif %}">
           <svg class="nav-icon"><use href="#icon-archive"></use></svg>
@@ -160,11 +162,17 @@
         <svg class="mobile-nav-icon"><use href="#icon-discover"></use></svg>
       </a>
 
-      <button class="mobile-nav-item btn-create-trigger" id="btnCreateTriggerMobile" aria-label="New Story">
-        <div class="mobile-create-fab">
-          <svg class="mobile-nav-icon"><use href="#icon-create"></use></svg>
-        </div>
-      </button>
+      {% if is_owner %}
+        <button class="mobile-nav-item btn-create-trigger" id="btnCreateTriggerMobile" aria-label="New Story">
+          <div class="mobile-create-fab">
+            <svg class="mobile-nav-icon"><use href="#icon-create"></use></svg>
+          </div>
+        </button>
+      {% else %}
+        <a href="/collections" class="mobile-nav-item {% if active_page == 'collections' %}active{% endif %}" aria-label="Archives">
+          <svg class="mobile-nav-icon"><use href="#icon-archive"></use></svg>
+        </a>
+      {% endif %}
 
       <a href="/activity" class="mobile-nav-item {% if active_page == 'activity' %}active{% endif %}" aria-label="Pulse">
         <svg class="mobile-nav-icon"><use href="#icon-pulse"></use></svg>
@@ -176,6 +184,7 @@
     </nav>
   </div>
 
+  {% if is_owner %}
   <!-- Create Story Wizard Modal -->
   <div class="modal-overlay" id="createModalOverlay">
     <div class="modal-card create-modal-card">
@@ -255,6 +264,7 @@
       </footer>
     </div>
   </div>
+  {% endif %}
 
   <!-- Quick Lightbox -->
   <div class="modal-overlay" id="lightboxOverlay">

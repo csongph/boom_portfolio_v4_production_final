@@ -62,10 +62,17 @@
       <p class="empty-state-desc">Your curated visual gallery is ready for your first story. Experience minimal storytelling.</p>
       
       <div class="hero-action-buttons">
-        <button class="btn-accent btn-create-trigger">
-          <svg class="btn-icon"><use href="#icon-create"></use></svg>
-          <span>+ Create First Story</span>
-        </button>
+        {% if is_owner %}
+          <button class="btn-accent btn-create-trigger">
+            <svg class="btn-icon"><use href="#icon-create"></use></svg>
+            <span>+ Create First Story</span>
+          </button>
+        {% else %}
+          <a href="/admin/login" class="btn-accent">
+            <svg class="btn-icon"><use href="#icon-studio"></use></svg>
+            <span>Studio Login</span>
+          </a>
+        {% endif %}
         <a href="/explore" class="btn-outline">
           <span>Discover Showcase</span>
         </a>

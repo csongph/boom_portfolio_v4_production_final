@@ -57,6 +57,9 @@ app.add_middleware(
     max_age=86400 * 30
 )
 
+if IS_VERCEL:
+    app.mount("/static/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+
 if (BASE_DIR / "static").exists():
     app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
@@ -636,7 +639,8 @@ async def create_post(
     layout_style: str = Form("clean"),
     aspect_ratio: str = Form("4:5"),
     files: List[UploadFile] = File(...),
-    db: sqlite3.Connection = Depends(get_db)
+    db: sqlite3.Connection = Depends(get_db),
+    _: bool = Depends(require_login)
 ):
     if not files or files[0].filename == "":
         raise HTTPException(status_code=400, detail="Please select at least one image.")

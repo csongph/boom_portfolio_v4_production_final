@@ -124,7 +124,7 @@ function initDoubleTapLike() {
       if (tapLength < 300 && tapLength > 0) {
         e.preventDefault();
         const overlay = target.querySelector('.heart-burst-overlay');
-        const postWrap = target.closest('.post-card');
+        const postWrap = target.closest('.story-card');
         const postId = postWrap ? postWrap.dataset.postId : null;
 
         if (overlay) {
@@ -191,7 +191,7 @@ function initSocialActionButtons() {
   document.querySelectorAll('.btn-comment-focus').forEach(btn => {
     btn.addEventListener('click', () => {
       const postId = btn.dataset.postId;
-      const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+      const postCard = document.querySelector(`.story-card[data-post-id="${postId}"]`);
       if (postCard) {
         const input = postCard.querySelector('.comment-input');
         if (input) input.focus();
@@ -245,19 +245,35 @@ function initInlineComments() {
           const data = await res.json();
           const list = document.getElementById(`comments-list-${postId}`);
           if (list) {
-            const commentHtml = `
-              <div class="comment-item">
-                <div class="comment-avatar">
-                  <img src="${data.comment.user_avatar}" alt="${data.comment.username}">
-                </div>
-                <div class="comment-content">
-                  <span class="comment-user">${data.comment.username}</span>
-                  <span class="comment-text">${data.comment.text}</span>
-                  <span class="comment-time">${data.comment.time_ago}</span>
-                </div>
-              </div>
-            `;
-            list.insertAdjacentHTML('beforeend', commentHtml);
+            const item = document.createElement('div');
+            item.className = 'comment-item';
+
+            const avatarWrap = document.createElement('div');
+            avatarWrap.className = 'comment-avatar';
+
+            const avatar = document.createElement('img');
+            avatar.src = data.comment.user_avatar;
+            avatar.alt = data.comment.username;
+            avatarWrap.appendChild(avatar);
+
+            const content = document.createElement('div');
+            content.className = 'comment-content';
+
+            const user = document.createElement('span');
+            user.className = 'comment-user';
+            user.textContent = data.comment.username;
+
+            const textEl = document.createElement('span');
+            textEl.className = 'comment-text';
+            textEl.textContent = data.comment.text;
+
+            const time = document.createElement('span');
+            time.className = 'comment-time';
+            time.textContent = data.comment.time_ago;
+
+            content.append(user, textEl, time);
+            item.append(avatarWrap, content);
+            list.appendChild(item);
           }
           input.value = '';
           showToast('Comment posted');
@@ -370,6 +386,7 @@ function initCreatePostWizard() {
       img.className = 'selected-thumb';
       selectedFilesList.appendChild(img);
     });
+    renderArrangementPreview();
   }
 
   // Fetch Smart Auto Arrange Proposal
@@ -406,6 +423,7 @@ function initCreatePostWizard() {
       const isSelected = st.id === selectedLayout;
       const card = document.createElement('div');
       card.className = `layout-option-card ${isSelected ? 'selected' : ''}`;
+      card.dataset.layout = st.id;
       card.innerHTML = `
         <div class="layout-option-name">${st.name}</div>
         <div class="layout-option-desc">${st.desc}</div>
@@ -414,6 +432,7 @@ function initCreatePostWizard() {
         grid.querySelectorAll('.layout-option-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedLayout = st.id;
+        renderArrangementPreview();
       });
       grid.appendChild(card);
     });
@@ -439,6 +458,46 @@ function initCreatePostWizard() {
         currentStep--;
         updateStepUI();
       }
+    });
+  }
+
+  document.querySelectorAll('.preset-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.preset-pill').forEach(el => el.classList.remove('active'));
+      pill.classList.add('active');
+      selectedAspectRatio = pill.dataset.ratio || '4:5';
+      renderArrangementPreview();
+    });
+  });
+
+  const smartLayoutBtn = document.getElementById('btnApplySmartLayout');
+  if (smartLayoutBtn) {
+    smartLayoutBtn.addEventListener('click', () => {
+      document.querySelectorAll('.layout-option-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.layout === selectedLayout);
+      });
+      showToast('Layout applied');
+    });
+  }
+
+  function renderArrangementPreview() {
+    const preview = document.getElementById('imageArrangementPreview');
+    if (!preview) return;
+
+    preview.innerHTML = '';
+    preview.dataset.ratio = selectedAspectRatio;
+    preview.dataset.layout = selectedLayout;
+
+    selectedFiles.forEach(file => {
+      const frame = document.createElement('div');
+      frame.className = 'preview-frame';
+
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+
+      frame.appendChild(img);
+      preview.appendChild(frame);
     });
   }
 

@@ -67,7 +67,9 @@
         <h3 class="empty-state-title">ยังไม่มีโพสต์</h3>
         <p class="empty-state-desc">เริ่มแชร์เรื่องราวของคุณกันเถอะ</p>
         {% if user_info.is_self %}
-        <button class="btn-accent btn-create-trigger">+ สร้างโพสต์</button>
+        {% if is_owner %}
+          <button class="btn-accent btn-create-trigger">+ สร้างโพสต์</button>
+        {% endif %}
         {% endif %}
       </div>
     {% else %}
