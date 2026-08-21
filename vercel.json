@@ -8,6 +8,18 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/api/$1"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/api/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/api/sitemap.xml"
+    },
+    {
       "src": "/static/uploads/(.*)",
       "dest": "api/index.py"
     },
