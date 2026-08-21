@@ -64,6 +64,15 @@ async def list_images(folder_id: str, admin_email: str | None = None):
                 out.append({"id":item_id,"name":f"{path}{f.get('name','Untitled')}","mime_type":mime or "image/jpeg","width":meta.get("width"),"height":meta.get("height")})
     return out
 
+async def folder_name(folder_id: str, admin_email: str | None = None):
+    auth=await _auth(admin_email)
+    params={**auth["params"],"fields":"id,name","supportsAllDrives":"true"}
+    async with httpx.AsyncClient(timeout=20) as client:
+        r=await client.get(f"{API}/files/{folder_id}",params=params,headers=auth["headers"])
+    if r.status_code in (401,403,404): return None
+    if r.is_error: return None
+    return (r.json() or {}).get("name")
+
 async def image_bytes(file_id: str, admin_email: str | None = None):
     auth=await _auth(admin_email)
     params={**auth["params"],"alt":"media"}

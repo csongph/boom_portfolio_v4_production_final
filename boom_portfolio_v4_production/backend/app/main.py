@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from .database import db
 from .security import require_admin
-from .drive import folder_id_from, list_images, image_bytes
+from .drive import folder_id_from, list_images, image_bytes, folder_name
 from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn
 from .config import get_settings
 from .github_import import analyze_repo
@@ -101,7 +101,9 @@ def albums(category:str|None=None):
     q=db().table("albums").select("*").eq("is_published",True).order("created_at",desc=True)
     if category:q=q.eq("category",category)
     rows=q.execute().data or []
-    for a in rows:a["cover_url"]=f"/api/drive/image/{a['cover_drive_file_id']}" if a.get("cover_drive_file_id") else None
+    for a in rows:
+        a["cover_url"]=f"/api/drive/image/{a['cover_drive_file_id']}" if a.get("cover_drive_file_id") else None
+        a["photo_count"]=len(db().table("album_photos").select("id").eq("album_id",a["id"]).eq("is_hidden",False).execute().data or [])
     return rows
 
 @app.get("/api/albums/{slug}")
@@ -187,9 +189,9 @@ async def delete_project(project_id:str,admin=Depends(require_admin)):
 
 @app.post("/api/admin/drive/import")
 async def import_drive(payload:DriveImport,admin=Depends(require_admin)):
-    fid=folder_id_from(payload.folder_url);photos=await list_images(fid,admin["email"])
+    fid=folder_id_from(payload.folder_url);photos=await list_images(fid,admin["email"]);name=await folder_name(fid,admin["email"])
     for p in photos:p["image_url"]=f"/api/drive/image/{p['id']}?token={image_token(p['id'],admin['email'])}"
-    return {"folder_id":fid,"count":len(photos),"photos":photos}
+    return {"folder_id":fid,"folder_name":name,"count":len(photos),"photos":photos}
 
 @app.get("/api/admin/albums")
 async def admin_albums(admin=Depends(require_admin)):
