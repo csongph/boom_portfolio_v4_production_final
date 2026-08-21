@@ -2,18 +2,74 @@
 
 {% block content %}
 <div class="stream-container">
-  {% if posts|length == 0 %}
-    <!-- Empty State -->
-    <div class="empty-state">
-      <div class="empty-state-icon">
-        <svg><use href="#icon-create"></use></svg>
+
+  <!-- Breathtaking Hero Banner Section -->
+  <section class="hero-canvas-banner">
+    <div class="hero-glow-backdrop"></div>
+    <div class="hero-content-wrap">
+      <div class="hero-badge-pill">
+        <span class="pulse-dot"></span>
+        <span>VISUAL CREATOR & DEVELOPER</span>
       </div>
-      <h3 class="empty-state-title">ยังไม่มีโพสต์</h3>
-      <p class="empty-state-desc">เริ่มแชร์เรื่องราวของคุณกันเถอะ — Your images. Your story.</p>
-      <button class="btn-accent btn-create-trigger">
-        <svg class="btn-icon"><use href="#icon-create"></use></svg>
-        <span>+ สร้างโพสต์</span>
-      </button>
+      <h1 class="hero-main-title">
+        Capturing Light, <br>
+        <span class="gradient-text">Crafting Digital Stories.</span>
+      </h1>
+      <p class="hero-subtitle-text">
+        A curated canvas of minimalist photography, architectural studies, and digital artifacts.
+      </p>
+
+      <!-- Quick Interactive Stats Bar -->
+      <div class="hero-stats-row">
+        <div class="hero-stat-pill">
+          <svg><use href="#icon-stream"></use></svg>
+          <span>Visual Stories</span>
+        </div>
+        <div class="hero-stat-pill">
+          <svg><use href="#icon-discover"></use></svg>
+          <span>Curated Albums</span>
+        </div>
+        <div class="hero-stat-pill">
+          <svg><use href="#icon-spark"></use></svg>
+          <span>Community Sparks</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Discover Quick Bar -->
+  <div class="stream-filter-bar">
+    <div class="filter-heading-group">
+      <h3 class="filter-title">Featured Stream</h3>
+      <span class="filter-count">{{ posts|length }} Stories</span>
+    </div>
+    
+    <div class="filter-pills-row">
+      <button class="stream-filter-pill active" data-filter="all">All Stories</button>
+      <button class="stream-filter-pill" data-filter="minimal">Minimal</button>
+      <button class="stream-filter-pill" data-filter="architecture">Architecture</button>
+      <button class="stream-filter-pill" data-filter="editorial">Editorial</button>
+    </div>
+  </div>
+
+  {% if posts|length == 0 %}
+    <!-- Breathtaking Empty State Hero -->
+    <div class="empty-state visitor-hero">
+      <div class="empty-state-icon">
+        <svg><use href="#icon-logo"></use></svg>
+      </div>
+      <h3 class="empty-state-title">Welcome to the Studio Canvas</h3>
+      <p class="empty-state-desc">Your curated visual gallery is ready for your first story. Experience minimal storytelling.</p>
+      
+      <div class="hero-action-buttons">
+        <button class="btn-accent btn-create-trigger">
+          <svg class="btn-icon"><use href="#icon-create"></use></svg>
+          <span>+ Create First Story</span>
+        </button>
+        <a href="/explore" class="btn-outline">
+          <span>Discover Showcase</span>
+        </a>
+      </div>
     </div>
   {% else %}
 
@@ -117,9 +173,9 @@
                   <img src="{{ c.user_avatar }}" alt="{{ c.username }}">
                 </div>
                 <div class="comment-content">
-                  <span class="comment-user">${c.username}</span>
-                  <span class="comment-text">${c.text}</span>
-                  <span class="comment-time">${c.time_ago}</span>
+                  <span class="comment-user">{{ c.username }}</span>
+                  <span class="comment-text">{{ c.text }}</span>
+                  <span class="comment-time">{{ c.time_ago }}</span>
                 </div>
               </div>
               {% endfor %}
