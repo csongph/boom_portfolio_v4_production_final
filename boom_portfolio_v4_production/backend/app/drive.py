@@ -26,7 +26,7 @@ async def _list_folder_items(client, folder_id: str, auth: dict):
     params={
         **auth["params"],
         "q":f"'{folder_id}' in parents and trashed = false",
-        "fields":"nextPageToken,files(id,name,mimeType,imageMediaMetadata,createdTime,modifiedTime)",
+        "fields":"nextPageToken,files(id,name,mimeType,imageMediaMetadata,shortcutDetails,createdTime,modifiedTime)",
         "pageSize":1000,
         "orderBy":"name",
         "supportsAllDrives":"true",
@@ -52,11 +52,16 @@ async def list_images(folder_id: str, admin_email: str | None = None):
             current_id,path=queue.pop(0)
             for f in await _list_folder_items(client,current_id,auth):
                 mime=f.get("mimeType","")
-                if mime=="application/vnd.google-apps.folder" and f["id"] not in seen:
-                    seen.add(f["id"]); queue.append((f["id"],f"{path}{f.get('name','Folder')}/")); continue
+                item_id=f["id"]
+                if mime=="application/vnd.google-apps.shortcut":
+                    shortcut=f.get("shortcutDetails") or {}
+                    item_id=shortcut.get("targetId") or item_id
+                    mime=shortcut.get("targetMimeType") or mime
+                if mime=="application/vnd.google-apps.folder" and item_id not in seen:
+                    seen.add(item_id); queue.append((item_id,f"{path}{f.get('name','Folder')}/")); continue
                 if not mime.startswith("image/"):continue
                 meta=f.get("imageMediaMetadata") or {}
-                out.append({"id":f["id"],"name":f"{path}{f.get('name','Untitled')}","mime_type":mime or "image/jpeg","width":meta.get("width"),"height":meta.get("height")})
+                out.append({"id":item_id,"name":f"{path}{f.get('name','Untitled')}","mime_type":mime or "image/jpeg","width":meta.get("width"),"height":meta.get("height")})
     return out
 
 async def image_bytes(file_id: str, admin_email: str | None = None):

@@ -24,6 +24,15 @@ def slugify(v):
     if not v: raise HTTPException(400,"slug ไม่ถูกต้อง")
     return v
 
+def unique_slug(table: str, value: str, current_id: str | None = None):
+    base=slugify(value); slug=base; i=2
+    while True:
+        q=db().table(table).select("id").eq("slug",slug).limit(1)
+        rows=q.execute().data or []
+        if not rows or (current_id and str(rows[0].get("id"))==str(current_id)):
+            return slug
+        slug=f"{base}-{i}"; i+=1
+
 def audit(actor,action,entity_type=None,entity_id=None,metadata=None):
     try: db().table("audit_logs").insert({"actor_email":actor,"action":action,"entity_type":entity_type,"entity_id":str(entity_id) if entity_id else None,"metadata":metadata or {}}).execute()
     except Exception: pass
@@ -199,14 +208,14 @@ async def create_album(payload:AlbumIn,admin=Depends(require_admin)):
     allp=await list_images(payload.drive_folder_id,admin["email"]);lookup={p["id"]:p for p in allp};selected=[lookup[x] for x in payload.selected_file_ids if x in lookup]
     if not selected:raise HTTPException(400,"ไม่ได้เลือกรูป")
     cover=payload.cover_drive_file_id if payload.cover_drive_file_id in {p['id'] for p in selected} else selected[0]["id"]
-    data={"title":payload.title,"slug":slugify(payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":payload.is_published,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
+    data={"title":payload.title,"slug":unique_slug("albums",payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":payload.is_published,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
     try:ar=db().table("albums").insert(data).execute()
     except Exception:raise HTTPException(409,"Album slug ซ้ำหรือข้อมูลไม่ถูกต้อง")
     a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":p["name"],"sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)});return {"album":a,"photo_count":len(rows)}
 
 @app.put("/api/admin/albums/{album_id}")
 async def update_album(album_id:str,payload:AlbumUpdate,admin=Depends(require_admin)):
-    data=payload.model_dump();data["slug"]=slugify(payload.slug or payload.title);data["event_date"]=payload.event_date.isoformat() if payload.event_date else None;data["updated_at"]=nowiso();r=db().table("albums").update(data).eq("id",album_id).execute();audit(admin["email"],"album.update","album",album_id);return r.data[0] if r.data else {}
+    data=payload.model_dump();data["slug"]=unique_slug("albums",payload.slug or payload.title,album_id);data["event_date"]=payload.event_date.isoformat() if payload.event_date else None;data["updated_at"]=nowiso();r=db().table("albums").update(data).eq("id",album_id).execute();audit(admin["email"],"album.update","album",album_id);return r.data[0] if r.data else {}
 
 @app.put("/api/admin/albums/{album_id}/order")
 async def reorder_album(album_id:str,payload:PhotoOrderIn,admin=Depends(require_admin)):
