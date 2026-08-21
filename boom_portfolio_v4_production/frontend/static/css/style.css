@@ -1751,11 +1751,29 @@ body:not(.admin-body) #lightboxImage {
 
 body:not(.admin-body) #lightboxClose {
   position: fixed;
-  top: 18px;
-  right: 22px;
-  color: #fff;
-  font-size: 42px;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+  z-index: 510;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 104px;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(240, 196, 135, 0.62);
+  border-radius: 999px;
+  background: rgba(8, 10, 7, 0.92);
+  color: #fff8ed;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
   cursor: pointer;
+}
+
+body:not(.admin-body) #lightboxClose:hover {
+  background: #f0c487;
+  color: #14100b;
 }
 
 body:not(.admin-body) .empty,
@@ -3277,14 +3295,38 @@ body:not(.admin-body) .lightbox {
   background: rgba(2, 4, 3, 0.9);
 }
 
+body:not(.admin-body) .lightbox.open {
+  display: grid;
+}
+
 body:not(.admin-body) #lightboxImage {
   width: auto;
   height: auto;
-  max-width: min(1180px, 92vw);
-  max-height: 86vh;
+  max-width: min(1120px, 88vw);
+  max-height: 82vh;
   object-fit: contain;
   border: 1px solid rgba(232, 190, 132, 0.16);
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+}
+
+body:not(.admin-body) .lightbox.open #lightboxClose {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 620px) {
+  body:not(.admin-body) #lightboxClose {
+    top: 12px;
+    right: 12px;
+    min-width: 88px;
+    height: 42px;
+    font-size: 14px;
+  }
+
+  body:not(.admin-body) #lightboxImage {
+    max-width: 92vw;
+    max-height: 78vh;
+  }
 }
 
 body.admin-body .drive-grid {
