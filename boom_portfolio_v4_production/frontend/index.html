@@ -1,5 +1,124 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Developer & Photographer Portfolio"><title>BOOM — Developer & Photographer</title><link rel="stylesheet" href="/static/css/style.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head><body><header class="container nav"><a class="brand" href="/" data-name>BOOM</a><button class="menu-btn">☰</button><nav class="nav-links"><a href="/">Home</a><a href="/work.html">Work</a><a href="/photography.html">Photography</a><a href="/about.html">About</a><a href="/contact.html">Contact</a><a class="nav-admin" href="/admin.html">Admin</a></nav></header><main><section class="container hero"><div class="hero-content"><div class="eyebrow" data-headline>Developer & Photographer</div><h1 data-name>BOOM</h1><p data-bio>Portfolio รวมผลงานพัฒนาโปรแกรมและงานภาพถ่าย</p><div class="tags"><a class="btn" href="/work.html">Explore Work →</a><a class="btn secondary" style="color:white;border-color:white" href="/photography.html">Photography →</a></div></div></section><section class="container section"><div class="section-head"><div><div class="eyebrow">Selected work</div><h2>Featured Projects</h2></div><a href="/work.html">View all →</a></div><div id="featuredProjects" class="grid project-grid"></div></section><section class="container section"><div class="section-head"><div><div class="eyebrow">Photography</div><h2>Latest Albums</h2></div><a href="/photography.html">View all →</a></div><div id="albumGrid" class="grid album-grid"></div></section></main><footer class="footer"><div class="container footer-inner"><strong data-name>BOOM</strong><span data-headline>Developer & Photographer</span></div></footer><script src="/static/js/site.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Developer & Photographer Portfolio">
+  <title>BOOM - Developer & Photographer</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=16">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="home-page">
+  <header class="container nav home-nav">
+    <a class="brand" href="/" data-name>BOOM</a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/work.html">Coding</a>
+      <a href="/photography.html">Photography</a>
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+      <a class="nav-admin" href="/admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="home-cinematic">
+      <div class="home-bg" aria-hidden="true"></div>
+      <div class="home-code-rain" aria-hidden="true"></div>
+      <div class="home-frame container">
+        <div class="home-copy">
+          <div class="home-kicker">Developer & Photographer</div>
+          <h1 class="home-title"><span>CS.</span><strong>BOOM</strong></h1>
+          <div class="home-rule" aria-hidden="true"></div>
+          <p class="home-tagline">สร้างเว็บที่ใช้งานจริง <span></span> เล่าเรื่องผ่านภาพ</p>
+          <p class="home-subcopy" data-bio>พัฒนาเว็บแอปที่รวดเร็ว ใช้ง่าย และดูดี พร้อมถ่ายทอดโมเมนต์ด้วยมุมมองของช่างภาพ</p>
+
+          <div class="home-actions">
+            <a class="btn home-primary" href="/work.html">Explore Coding →</a>
+            <a class="btn secondary home-secondary" href="/photography.html">View Photography →</a>
+          </div>
+
+          <div class="home-tech-block">
+            <div class="home-label">Tech Stack</div>
+            <div class="home-tech-row">
+              <span>HTML</span>
+              <span>CSS</span>
+              <span>JavaScript</span>
+              <span>Python</span>
+              <span>FastAPI</span>
+              <span>Supabase</span>
+            </div>
+          </div>
+
+          <div class="home-connect-block">
+            <div class="home-label">Connect</div>
+            <div id="primaryContactActions" class="home-socials"></div>
+          </div>
+
+          <div class="home-stats">
+            <div><span>&lt;/&gt;</span><strong id="homeProjectCount">...</strong><small>Coding Projects</small></div>
+            <div><span>▣</span><strong id="homePhotoCount">...</strong><small>Photos Taken</small></div>
+            <div><span>✦</span><strong id="homeIdeaCount">...</strong><small>Ideas & Learning</small></div>
+          </div>
+        </div>
+
+        <div class="home-visual" aria-hidden="true">
+          <div class="code-window">
+            <div class="window-bar"><span></span><span></span><span></span></div>
+            <pre><code>const story = {
+  craft: "code",
+  lens: "camera",
+  goal: "real work"
+}
+
+renderPortfolio(story)</code></pre>
+          </div>
+          <div class="camera-body">
+            <div class="camera-prism"></div>
+            <div class="camera-lens"><span></span></div>
+            <div class="camera-flash"></div>
+          </div>
+          <div class="film-strip"><span></span><span></span><span></span></div>
+          <div class="field-card">Field Notes<br><strong>Code / Light / Capture</strong></div>
+        </div>
+      </div>
+      <div class="home-orbit" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="home-top-note">CS.BOOM / Code / Camera <span></span></div>
+    </section>
+
+    <section class="container section home-section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Selected coding</div>
+          <h2>Featured Coding</h2>
+        </div>
+        <a href="/work.html">View all →</a>
+      </div>
+      <div id="featuredProjects" class="grid project-grid"></div>
+    </section>
+
+    <section class="container section home-section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Photography</div>
+          <h2>Latest Albums</h2>
+        </div>
+        <a href="/photography.html">View all →</a>
+      </div>
+      <div id="albumGrid" class="grid album-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <strong data-name>BOOM</strong>
+      <span data-headline>Developer & Photographer</span>
+    </div>
+  </footer>
+
+  <script src="/static/js/site.js?v=16"></script>
+</body>
+</html>

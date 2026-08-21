@@ -1,1 +1,84 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Developer & Photographer Portfolio"><title>About — BOOM</title><link rel="stylesheet" href="/static/css/style.css"></head><body><header class="container nav"><a class="brand" href="/" data-name>BOOM</a><button class="menu-btn">☰</button><nav class="nav-links"><a href="/">Home</a><a href="/work.html">Work</a><a href="/photography.html">Photography</a><a href="/about.html">About</a><a href="/contact.html">Contact</a><a class="nav-admin" href="/admin.html">Admin</a></nav></header><main class="container section"><div class="split"><img data-portrait class="portrait" alt="Portrait"><div><div class="eyebrow">About me</div><h1 class="page-title" style="font-size:clamp(44px,6vw,80px)">Hi, I’m <span data-name>BOOM</span>.</h1><h3 data-headline>Developer & Photographer</h3><p class="prose muted" data-bio></p><div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span><span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Supabase</span><span class="tag">Photography</span></div></div></div></main><footer class="footer"><div class="container footer-inner"><strong data-name>BOOM</strong><span data-headline>Developer & Photographer</span></div></footer><script src="/static/js/site.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="About BOOM - Developer & Photographer">
+  <title>About - BOOM</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=16">
+</head>
+<body>
+  <header class="container nav">
+    <a class="brand" href="/" data-name>BOOM</a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/work.html">Coding</a>
+      <a href="/photography.html">Photography</a>
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+      <a class="nav-admin" href="/admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="about-showcase">
+    <section class="container about-hero">
+      <div class="profile-card">
+        <div class="profile-pill">Profile <span></span></div>
+        <div class="profile-dots" aria-hidden="true"></div>
+        <figure class="profile-photo-wrap">
+          <img src="/static/img/boom-profile.jpg?v=1" alt="BOOM holding a camera" data-portrait>
+          <figcaption>Boom.</figcaption>
+        </figure>
+        <div class="profile-divider"></div>
+        <div class="profile-card-footer">
+          <div class="profile-code-mark">&lt;/&gt;</div>
+          <p>Building ideas.<br>Capturing moments.</p>
+          <a class="profile-arrow" href="/contact.html" aria-label="Contact BOOM">→</a>
+        </div>
+      </div>
+
+      <div class="about-copy">
+        <div class="eyebrow">About me</div>
+        <h1 class="about-title">Hi, I'm <span data-name>BOOM</span>.</h1>
+        <div class="about-role">
+          <span></span>
+          <strong data-headline>Developer & Photographer</strong>
+        </div>
+        <p class="about-intro" data-bio>I build web applications that are fast, responsive, and user-friendly. I also love capturing moments that tell real stories.</p>
+
+        <div class="about-skill-grid" aria-label="Skills">
+          <span><b>HTML</b></span>
+          <span><b>CSS</b></span>
+          <span><b>JavaScript</b></span>
+          <span><b>Python</b></span>
+          <span><b>FastAPI</b></span>
+          <span><b>Supabase</b></span>
+          <span><b>Photography</b></span>
+        </div>
+
+        <div class="about-connect">
+          <span>Let's connect</span>
+          <div id="primaryContactActions" class="about-contact-actions"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="about-side-note" aria-hidden="true">
+      <span>Create</span>
+      <small>Code</small>
+      <small>Design</small>
+      <small>Capture</small>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <strong data-name>BOOM</strong>
+      <span data-headline>Developer & Photographer</span>
+    </div>
+  </footer>
+
+  <script src="/static/js/site.js?v=16"></script>
+</body>
+</html>

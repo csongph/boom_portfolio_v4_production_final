@@ -23,6 +23,9 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/"):
             self.proxy_api()
             return
+        if self.path in {"/robots.txt", "/sitemap.xml"}:
+            self.proxy_api("/api" + self.path)
+            return
 
         path = self.path.split("?", 1)[0].rstrip("/") or "/"
         if path in ROUTES:
@@ -41,8 +44,9 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
     def do_DELETE(self):
         self.proxy_api()
 
-    def proxy_api(self):
-        if not self.path.startswith("/api/"):
+    def proxy_api(self, proxy_path=None):
+        path = proxy_path or self.path
+        if not path.startswith("/api/"):
             self.send_error(404, "File not found")
             return
 
@@ -55,7 +59,7 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
             for key, value in self.headers.items()
             if key.lower() not in {"host", "connection", "content-length"}
         }
-        target = BACKEND_ORIGIN.rstrip("/") + self.path
+        target = BACKEND_ORIGIN.rstrip("/") + path
         request = Request(target, data=body, headers=headers, method=self.command)
 
         try:
