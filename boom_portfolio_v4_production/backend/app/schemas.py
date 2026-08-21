@@ -13,7 +13,7 @@ class AlbumIn(BaseModel):
     drive_folder_id: str
     selected_file_ids: list[str] = Field(min_length=1)
     cover_drive_file_id: str | None = None
-    is_published: bool = False
+    is_published: bool = True
     seo_title: str | None = None
     seo_description: str | None = None
 
