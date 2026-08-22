@@ -1,11 +1,19 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 import argparse
 import os
 
 
 BACKEND_ORIGIN = os.environ.get("BACKEND_ORIGIN", "http://127.0.0.1:8000")
+
+
+class NoRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+NO_REDIRECT_OPENER = build_opener(NoRedirectHandler)
 ROUTES = {
     "/": "index.html",
     "/work": "work.html",
@@ -28,6 +36,10 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
             return
 
         path = self.path.split("?", 1)[0].rstrip("/") or "/"
+        if path.startswith("/photography/") or path.startswith("/share/photography/"):
+            self.path = "/album.html" + ("?" + self.path.split("?", 1)[1] if "?" in self.path else "")
+            super().do_GET()
+            return
         if path in ROUTES:
             self.path = "/" + ROUTES[path]
         super().do_GET()
@@ -63,7 +75,7 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
         request = Request(target, data=body, headers=headers, method=self.command)
 
         try:
-            with urlopen(request, timeout=30) as response:
+            with NO_REDIRECT_OPENER.open(request, timeout=30) as response:
                 self.send_response(response.status)
                 for key, value in response.headers.items():
                     if key.lower() not in {"connection", "transfer-encoding"}:

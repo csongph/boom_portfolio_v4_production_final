@@ -1,4 +1,4 @@
-import json, re, time
+import html, json, re, time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request, Query
@@ -208,6 +208,30 @@ def go_instagram():
     if not re.match(r"^https?://(www\.)?(instagram\.com|instagr\.am)/",url,re.I):
         raise HTTPException(400,"Invalid Instagram URL")
     return RedirectResponse(url,status_code=302)
+
+@app.get("/share/photography/{slug}/{photo_id}", response_class=Response)
+def share_photography_handoff(slug: str, photo_id: str):
+    album=one("albums","slug",slug,True)
+    photo,photo_album_row=photo_album(photo_id,True)
+    if str(photo.get("album_id")) != str(album.get("id")) or str(photo_album_row.get("id")) != str(album.get("id")):
+        raise HTTPException(404,"Photo not found")
+    base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
+    photo_url=f"{base}/photography/{slug}?photo={photo_id}"
+    image_url=f"{base}/api/drive/image/{photo['drive_file_id']}"
+    title=f"{album.get('title') or 'Photography'} — CS.BOOM Photography"
+    desc=album.get("seo_description") or album.get("description") or "View this photo and the full album on CS.BOOM Photography."
+    safe=lambda v: html.escape(str(v or ""),quote=True)
+    body=f"""<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{safe(title)}</title><link rel="canonical" href="{safe(photo_url)}">
+<meta name="description" content="{safe(desc)}">
+<meta property="og:type" content="article"><meta property="og:title" content="{safe(title)}">
+<meta property="og:description" content="{safe(desc)}"><meta property="og:url" content="{safe(photo_url)}">
+<meta property="og:image" content="{safe(image_url)}"><meta name="twitter:card" content="summary_large_image">
+<meta http-equiv="refresh" content="0; url={safe(photo_url)}">
+<script>location.replace({json.dumps(photo_url)});</script></head>
+<body><p><a href="{safe(photo_url)}">Open photo</a></p></body></html>"""
+    return Response(body,media_type="text/html; charset=utf-8",headers={"Cache-Control":"public,max-age=300"})
 
 @app.get("/api/projects")
 def projects(featured: bool|None=None,q: str|None=None):
