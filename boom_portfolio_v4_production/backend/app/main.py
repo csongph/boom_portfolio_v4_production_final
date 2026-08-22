@@ -216,7 +216,7 @@ def share_photography_handoff(slug: str, photo_id: str):
     if str(photo.get("album_id")) != str(album.get("id")) or str(photo_album_row.get("id")) != str(album.get("id")):
         raise HTTPException(404,"Photo not found")
     base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
-    photo_url=f"{base}/photography/{slug}?photo={photo_id}"
+    photo_url=f"{base}/album.html?slug={slug}&photo={photo_id}"
     image_url=f"{base}/api/drive/image/{photo['drive_file_id']}"
     title=f"{album.get('title') or 'Photography'} — CS.BOOM Photography"
     desc=album.get("seo_description") or album.get("description") or "View this photo and the full album on CS.BOOM Photography."

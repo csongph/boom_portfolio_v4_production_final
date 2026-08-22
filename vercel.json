@@ -20,8 +20,24 @@
       "dest": "https://boom-portfolio-v4-production-final.onrender.com/api/sitemap.xml"
     },
     {
+      "src": "/photography/([^/]+)",
+      "dest": "/boom_portfolio_v4_production/frontend/album.html?slug=$1"
+    },
+    {
+      "src": "/share/photography/([^/]+)/([^/]+)",
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/share/photography/$1/$2"
+    },
+    {
+      "src": "/album.html",
+      "dest": "/boom_portfolio_v4_production/frontend/album.html"
+    },
+    {
       "src": "/static/uploads/(.*)",
       "dest": "api/index.py"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/boom_portfolio_v4_production/frontend/static/$1"
     },
     {
       "src": "/static/(.*)",
