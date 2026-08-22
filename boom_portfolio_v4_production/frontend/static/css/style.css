@@ -3889,3 +3889,111 @@ body:not(.admin-body) .lightbox-nav:hover {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* About page correction: keep the role summary compact and prevent CTA overlap. */
+body:not(.admin-body) .about-showcase {
+  overflow: hidden;
+}
+
+body:not(.admin-body) .role-summary-grid {
+  gap: 18px;
+  max-width: 720px;
+}
+
+body:not(.admin-body) .role-summary-grid section {
+  padding: 22px;
+  background: rgba(255, 253, 247, 0.08);
+  border-color: rgba(255, 248, 237, 0.14);
+}
+
+body:not(.admin-body) .role-summary-grid h2 {
+  margin: 0 0 16px;
+  color: var(--u-text);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+body:not(.admin-body) .role-summary-grid .about-skill-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 0;
+}
+
+body:not(.admin-body) .role-summary-grid .about-skill-grid span {
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255, 248, 237, 0.82);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+body:not(.admin-body) .role-summary-grid .about-skill-grid span::before {
+  width: 8px;
+  height: 8px;
+  margin-right: 12px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+body:not(.admin-body) .role-summary-grid .about-skill-grid b {
+  font-weight: 800;
+}
+
+body:not(.admin-body) .about-connect {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) auto auto;
+  width: min(100%, 760px);
+  margin-top: 32px;
+  padding: 18px 22px;
+  gap: 14px 18px;
+  position: relative;
+  z-index: 3;
+}
+
+body:not(.admin-body) .about-connect > span {
+  min-width: 0;
+  white-space: normal;
+  align-self: center;
+}
+
+body:not(.admin-body) .about-contact-actions {
+  grid-column: 2 / 4;
+  justify-content: flex-end;
+  padding-left: 0;
+  border-left: 0;
+}
+
+body:not(.admin-body) .about-connect > .btn {
+  min-height: 46px;
+  padding: 0 24px;
+  border-radius: 8px;
+}
+
+body:not(.admin-body) .about-side-note {
+  right: max(18px, calc((100vw - 1180px) / 2));
+  opacity: 0.22;
+  transform: translateX(18%);
+}
+
+@media (max-width: 1180px) {
+  body:not(.admin-body) .about-side-note {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  body:not(.admin-body) .about-connect {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.admin-body) .about-contact-actions {
+    grid-column: auto;
+    justify-content: flex-start;
+  }
+}
