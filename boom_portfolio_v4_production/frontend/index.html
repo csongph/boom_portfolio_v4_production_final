@@ -3,9 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Developer & Photographer Portfolio">
-  <title>BOOM - Developer & Photographer</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=22">
+  <meta name="description" content="BOOM — Developer & Photographer portfolio featuring coding projects, photography albums, skills, and contact channels.">
+  <link rel="canonical" href="https://boom-portfolio-v4-production-final.vercel.app/">
+  <meta property="og:title" content="BOOM — Developer & Photographer">
+  <meta property="og:description" content="Professional personal portfolio for BOOM: coding projects, photography work, skills, and contact.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://boom-portfolio-v4-production-final.vercel.app/">
+  <meta property="og:image" content="/static/img/boom-profile.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f6f1e8">
+  <link rel="icon" href="/static/img/boom-profile.jpg">
+  <title>BOOM — Developer & Photographer</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=23">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +29,6 @@
       <a href="/photography.html">Photography</a>
       <a href="/about.html">About</a>
       <a href="/contact.html">Contact</a>
-      <a class="nav-admin" href="/admin.html">Admin</a>
     </nav>
   </header>
 
@@ -108,6 +116,26 @@ renderPortfolio(story)</code></pre>
       </div>
       <div id="albumGrid" class="grid album-grid"></div>
     </section>
+
+    <section class="container section home-section about-strip">
+      <div>
+        <div class="eyebrow">Short about</div>
+        <h2>Developer mindset, photographer eye.</h2>
+      </div>
+      <p data-bio>I'm BOOM. I build clean, practical websites and capture real moments through photography. This portfolio brings together my coding work, photo projects, and the things I keep learning along the way.</p>
+      <div class="strip-actions">
+        <a class="btn secondary" href="/about.html">About Me</a>
+        <a class="btn" href="/contact.html">Contact Me</a>
+      </div>
+    </section>
+
+    <section class="container contact-cta">
+      <div>
+        <div class="eyebrow">Contact</div>
+        <h2>Let's create something together.</h2>
+      </div>
+      <a class="btn" href="/contact.html">Start a conversation</a>
+    </section>
   </main>
 
   <footer class="footer">
@@ -117,6 +145,6 @@ renderPortfolio(story)</code></pre>
     </div>
   </footer>
 
-  <script src="/static/js/site.js?v=22"></script>
+  <script src="/static/js/site.js?v=23"></script>
 </body>
 </html>

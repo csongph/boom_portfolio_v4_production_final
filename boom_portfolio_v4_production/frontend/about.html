@@ -3,9 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="About BOOM - Developer & Photographer">
-  <title>About - BOOM</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=22">
+  <meta name="description" content="About BOOM — Developer & Photographer. Skills, roles, and ways to view work or get in touch.">
+  <link rel="canonical" href="https://boom-portfolio-v4-production-final.vercel.app/about.html">
+  <meta property="og:title" content="About — BOOM">
+  <meta property="og:description" content="Meet BOOM, a developer and photographer building practical websites and capturing real moments.">
+  <meta property="og:type" content="profile">
+  <meta property="og:image" content="/static/img/boom-profile.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f6f1e8">
+  <link rel="icon" href="/static/img/boom-profile.jpg">
+  <title>About — BOOM</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=23">
 </head>
 <body>
   <header class="container nav">
@@ -17,7 +25,6 @@
       <a href="/photography.html">Photography</a>
       <a href="/about.html">About</a>
       <a href="/contact.html">Contact</a>
-      <a class="nav-admin" href="/admin.html">Admin</a>
     </nav>
   </header>
 
@@ -47,19 +54,32 @@
         </div>
         <p class="about-intro" data-bio>I'm BOOM. I build clean, practical websites and capture real moments through photography. This portfolio brings together my coding work, photo projects, and the things I keep learning along the way.</p>
 
-        <div class="about-skill-grid" aria-label="Skills">
-          <span><b>HTML</b></span>
-          <span><b>CSS</b></span>
-          <span><b>JavaScript</b></span>
-          <span><b>Python</b></span>
-          <span><b>FastAPI</b></span>
-          <span><b>Supabase</b></span>
-          <span><b>Photography</b></span>
+        <div class="role-summary-grid" aria-label="Role summary">
+          <section>
+            <h2>Developer</h2>
+            <div class="about-skill-grid">
+              <span><b>Web Development</b></span>
+              <span><b>Backend Development</b></span>
+              <span><b>REST API</b></span>
+              <span><b>Database</b></span>
+            </div>
+          </section>
+          <section>
+            <h2>Photographer</h2>
+            <div class="about-skill-grid">
+              <span><b>Portrait</b></span>
+              <span><b>Event</b></span>
+              <span><b>Studio</b></span>
+              <span><b>Fashion</b></span>
+            </div>
+          </section>
         </div>
 
         <div class="about-connect">
-          <span>Let's connect</span>
+          <span>View my work or let's connect</span>
           <div id="primaryContactActions" class="about-contact-actions"></div>
+          <a class="btn secondary" href="/work.html">View My Work</a>
+          <a class="btn" href="/contact.html">Contact Me</a>
         </div>
       </div>
     </section>
@@ -79,6 +99,6 @@
     </div>
   </footer>
 
-  <script src="/static/js/site.js?v=22"></script>
+  <script src="/static/js/site.js?v=23"></script>
 </body>
 </html>
