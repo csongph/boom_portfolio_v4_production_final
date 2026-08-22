@@ -62,13 +62,39 @@ def ai_prompt(payload: AIContentIn) -> str:
         f"Existing admin fields/context: {json.dumps(ctx, ensure_ascii=False)[:6000]}"
     )
 
+def parse_gemini_json(raw: str) -> dict:
+    raw=(raw or "").strip()
+    raw=re.sub(r"^```(?:json)?|```$","",raw,flags=re.I).strip()
+    try:
+        return json.loads(raw)
+    except Exception:
+        start=raw.find("{"); end=raw.rfind("}")
+        if start >= 0 and end > start:
+            try:
+                return json.loads(raw[start:end+1])
+            except Exception:
+                pass
+    raise HTTPException(502,"Gemini ส่งคำตอบกลับมาในรูปแบบที่อ่านไม่ได้")
+
+def gemini_error(response) -> str:
+    detail="Gemini สร้างข้อความไม่สำเร็จ"
+    try:
+        err=response.json().get("error") or {}
+        msg=str(err.get("message") or "").strip()
+        if msg:
+            detail=f"Gemini error: {msg[:220]}"
+    except Exception:
+        pass
+    return detail
+
 async def gemini_generate_json(payload: AIContentIn) -> dict:
     gemini_key=s.effective_gemini_api_key
     if not gemini_key:
         raise HTTPException(503,"Gemini ยังไม่ได้ตั้งค่า GEMINI_API_KEY ใน Backend")
+    prompt=ai_prompt(payload)
     url=f"https://generativelanguage.googleapis.com/v1beta/models/{s.gemini_model}:generateContent"
     body={
-        "contents":[{"parts":[{"text":ai_prompt(payload)}]}],
+        "contents":[{"parts":[{"text":prompt}]}],
         "generationConfig":{
             "temperature":0.7,
             "maxOutputTokens":900,
@@ -78,18 +104,32 @@ async def gemini_generate_json(payload: AIContentIn) -> dict:
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             r=await client.post(url,headers={"x-goog-api-key":gemini_key,"Content-Type":"application/json"},json=body)
+            if r.status_code>=400:
+                fallback=await client.post(
+                    "https://generativelanguage.googleapis.com/v1beta/interactions",
+                    headers={"x-goog-api-key":gemini_key,"Content-Type":"application/json"},
+                    json={"model":s.gemini_model,"input":prompt}
+                )
+                if fallback.status_code>=400:
+                    raise HTTPException(502,gemini_error(fallback))
+                fdata=fallback.json()
+                raw=fdata.get("output_text") or ""
+                if not raw:
+                    parts=[]
+                    for step in fdata.get("steps") or []:
+                        for item in step.get("content") or []:
+                            if item.get("type")=="text":
+                                parts.append(item.get("text",""))
+                    raw="".join(parts)
+                return parse_gemini_json(raw)
     except httpx.RequestError:
         raise HTTPException(502,"เชื่อมต่อ Gemini ไม่สำเร็จ")
     if r.status_code>=400:
-        raise HTTPException(502,"Gemini สร้างข้อความไม่สำเร็จ")
+        raise HTTPException(502,gemini_error(r))
     data=r.json()
     text=((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
     raw="".join(str(p.get("text","")) for p in text).strip()
-    raw=re.sub(r"^```(?:json)?|```$","",raw,flags=re.I).strip()
-    try:
-        return json.loads(raw)
-    except Exception:
-        raise HTTPException(502,"Gemini ส่งคำตอบกลับมาในรูปแบบที่อ่านไม่ได้")
+    return parse_gemini_json(raw)
 
 def primary_admin(): return s.primary_admin_email
 
