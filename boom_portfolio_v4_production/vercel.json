@@ -1,0 +1,55 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/:path*"
+    },
+    {
+      "source": "/go/:path*",
+      "destination": "https://boom-portfolio-v4-production-final.onrender.com/go/:path*"
+    },
+    {
+      "source": "/photography/:slug",
+      "destination": "/frontend/album.html?slug=:slug"
+    },
+    {
+      "source": "/share/photography/:slug/:photo",
+      "destination": "https://boom-portfolio-v4-production-final.onrender.com/share/photography/:slug/:photo"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/sitemap.xml"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/frontend/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/frontend/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ]
+}

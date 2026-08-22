@@ -5,7 +5,7 @@
   "rewrites": [
     {"source": "/api/:path*", "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/:path*"},
     {"source": "/go/:path*", "destination": "https://boom-portfolio-v4-production-final.onrender.com/go/:path*"},
-    {"source": "/photography/:slug", "destination": "/album.html"},
+    {"source": "/photography/:slug", "destination": "/album.html?slug=:slug"},
     {"source": "/share/photography/:slug/:photo", "destination": "https://boom-portfolio-v4-production-final.onrender.com/share/photography/:slug/:photo"},
     {"source": "/robots.txt", "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/robots.txt"},
     {"source": "/sitemap.xml", "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/sitemap.xml"}
