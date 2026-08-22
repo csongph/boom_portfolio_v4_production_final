@@ -1,14 +1,15 @@
-import re, time
+import json, re, time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request, Query
 from fastapi.responses import Response, RedirectResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from .database import db
 from .security import require_admin
 from .drive import folder_id_from, list_images, image_bytes, folder_name
-from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn
+from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn, AIContentIn
 from .config import get_settings
 from .github_import import analyze_repo
 from .integrations import google_auth_url, decode_state, google_exchange, save_google_token, google_status, disconnect_google
@@ -43,6 +44,52 @@ def one(table,key,value,published=False):
     r=q.limit(1).execute()
     if not r.data:raise HTTPException(404,"Not found")
     return r.data[0]
+
+def ai_prompt(payload: AIContentIn) -> str:
+    ctx={k:v for k,v in (payload.context or {}).items() if v not in (None,"",[],{})}
+    return (
+        "You are BOOM's portfolio CMS writing assistant. "
+        "Write concise, honest portfolio copy for a Developer x Photographer personal site. "
+        "Do not invent links, awards, clients, dates, or metrics. "
+        "Use a minimal, modern, professional tone. "
+        f"Language: {'Thai' if payload.language == 'th' else 'English'}. "
+        f"Content type: {payload.kind}. Tone: {payload.tone}. "
+        "Return JSON only. For project return keys: summary, description, role, problem, solution, features, seo_title, seo_description. "
+        "For album return keys: title, description, category, seo_title, seo_description. "
+        "For site return keys: headline, bio, seo_description. "
+        "For contact return keys: contact_heading, contact_intro, availability_text. "
+        "Keep descriptions easy to scan and avoid hype. "
+        f"Existing admin fields/context: {json.dumps(ctx, ensure_ascii=False)[:6000]}"
+    )
+
+async def gemini_generate_json(payload: AIContentIn) -> dict:
+    gemini_key=s.effective_gemini_api_key
+    if not gemini_key:
+        raise HTTPException(503,"Gemini ยังไม่ได้ตั้งค่า GEMINI_API_KEY ใน Backend")
+    url=f"https://generativelanguage.googleapis.com/v1beta/models/{s.gemini_model}:generateContent"
+    body={
+        "contents":[{"parts":[{"text":ai_prompt(payload)}]}],
+        "generationConfig":{
+            "temperature":0.7,
+            "maxOutputTokens":900,
+            "response_mime_type":"application/json"
+        }
+    }
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            r=await client.post(url,headers={"x-goog-api-key":gemini_key,"Content-Type":"application/json"},json=body)
+    except httpx.RequestError:
+        raise HTTPException(502,"เชื่อมต่อ Gemini ไม่สำเร็จ")
+    if r.status_code>=400:
+        raise HTTPException(502,"Gemini สร้างข้อความไม่สำเร็จ")
+    data=r.json()
+    text=((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+    raw="".join(str(p.get("text","")) for p in text).strip()
+    raw=re.sub(r"^```(?:json)?|```$","",raw,flags=re.I).strip()
+    try:
+        return json.loads(raw)
+    except Exception:
+        raise HTTPException(502,"Gemini ส่งคำตอบกลับมาในรูปแบบที่อ่านไม่ได้")
 
 def primary_admin(): return s.primary_admin_email
 
@@ -158,6 +205,22 @@ async def admin_projects(admin=Depends(require_admin)):return db().table("projec
 @app.post("/api/admin/github/analyze")
 async def github_analyze(payload:GitHubImportIn,admin=Depends(require_admin)):
     data=analyze_repo(payload.repo_url);audit(admin["email"],"github.analyze","repository",payload.repo_url,{"files":data["file_count"]});return data
+
+@app.post("/api/admin/ai/generate")
+async def ai_generate(payload:AIContentIn,admin=Depends(require_admin)):
+    out=await gemini_generate_json(payload)
+    audit(admin["email"],"ai.generate",payload.kind,None,{"keys":list(out.keys())})
+    return out
+
+@app.get("/api/admin/ai/status")
+async def ai_status(admin=Depends(require_admin)):
+    return {"provider":"Gemini","configured":bool(s.effective_gemini_api_key),"model":s.gemini_model}
+
+@app.post("/api/admin/ai/test")
+async def ai_test(admin=Depends(require_admin)):
+    out=await gemini_generate_json(AIContentIn(kind="contact",context={"request":"Return a short readiness message for BOOM CMS."}))
+    audit(admin["email"],"ai.test","gemini",None,{"model":s.gemini_model})
+    return {"ok":True,"model":s.gemini_model,"sample":out}
 
 @app.post("/api/admin/projects")
 async def create_project(payload:ProjectIn,admin=Depends(require_admin)):

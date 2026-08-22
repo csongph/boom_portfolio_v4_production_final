@@ -57,6 +57,12 @@ class ProjectIn(BaseModel):
 class GitHubImportIn(BaseModel): repo_url: str
 class GitHubCreateIn(BaseModel): repo_url: str; publish: bool = False
 
+class AIContentIn(BaseModel):
+    kind: str = Field(pattern="^(project|album|site|contact)$")
+    tone: str = "professional"
+    language: str = "th"
+    context: dict = Field(default_factory=dict)
+
 class SettingsIn(BaseModel):
     display_name: str = "BOOM"
     headline: str = "Developer & Photographer"

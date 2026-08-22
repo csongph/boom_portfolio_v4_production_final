@@ -635,6 +635,28 @@ input[type="checkbox"] {
   padding: 10px 14px;
 }
 
+.ai-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 0 0 20px;
+  border: 1px solid rgba(99,102,241,0.22);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08));
+}
+
+.ai-toolbar .btn {
+  min-height: 40px;
+  padding: 9px 16px;
+}
+
+.ai-toolbar .muted {
+  flex: 1 1 260px;
+  margin: 0;
+}
+
 /* ── Drive / Photo Grid (Admin Photography) ────────────────── */
 .drive-grid {
   display: grid;

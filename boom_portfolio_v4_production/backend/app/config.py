@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     google_oauth_redirect_uri: str = ""
+    gemini_api_key: str = ""
+    google_ai_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
     token_encryption_key: str = ""
     oauth_state_secret: str = ""
     github_token: str = ""
@@ -30,6 +33,9 @@ class Settings(BaseSettings):
     def primary_admin_email(self):
         items=[x.strip().lower() for x in self.admin_emails.split(",") if x.strip()]
         return items[0] if items else None
+    @property
+    def effective_gemini_api_key(self):
+        return self.gemini_api_key or self.google_ai_api_key
 
 @lru_cache
 def get_settings(): return Settings()
