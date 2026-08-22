@@ -14,6 +14,10 @@ class AlbumIn(BaseModel):
     selected_file_ids: list[str] = Field(min_length=1)
     cover_drive_file_id: str | None = None
     is_published: bool = True
+    allow_downloads: bool = True
+    allow_sharing: bool = True
+    show_likes: bool = True
+    download_quality: str = Field(default="high", pattern="^(web|high|original)$")
     seo_title: str | None = None
     seo_description: str | None = None
 
@@ -25,10 +29,23 @@ class AlbumUpdate(BaseModel):
     event_date: date | None = None
     cover_drive_file_id: str | None = None
     is_published: bool = False
+    allow_downloads: bool = True
+    allow_sharing: bool = True
+    show_likes: bool = True
+    download_quality: str = Field(default="high", pattern="^(web|high|original)$")
     seo_title: str | None = None
     seo_description: str | None = None
 
 class PhotoOrderIn(BaseModel): photo_ids: list[str]
+
+class VisitorIn(BaseModel):
+    anonymous_visitor_id: str = Field(min_length=12, max_length=96)
+
+class PhotoEventIn(VisitorIn):
+    event_type: str = Field(pattern="^(photo_view|download|share)$")
+
+class AlbumViewIn(VisitorIn):
+    album_id: str
 
 class ProjectIn(BaseModel):
     title: str

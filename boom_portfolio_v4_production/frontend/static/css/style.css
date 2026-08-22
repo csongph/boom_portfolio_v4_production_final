@@ -657,6 +657,41 @@ input[type="checkbox"] {
   margin: 0;
 }
 
+.panel-subtle {
+  padding: 16px;
+  margin: 16px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.035);
+}
+
+.panel-subtle h3,
+.analytics-grid h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.analytics-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.analytics-kpis {
+  margin-bottom: 0;
+}
+
+.analytics-columns {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 18px;
+}
+
+.analytics-row {
+  width: 100%;
+  color: inherit;
+  cursor: pointer;
+}
+
 /* ── Drive / Photo Grid (Admin Photography) ────────────────── */
 .drive-grid {
   display: grid;
@@ -3909,6 +3944,318 @@ body:not(.admin-body) .lightbox-nav:hover {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* Photography interactive gallery layer */
+body:not(.admin-body) .toast-box {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 10000;
+  display: grid;
+  gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+body:not(.admin-body) .toast {
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  background: rgba(8,10,7,0.86);
+  color: #fff8ed;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.35);
+}
+
+body:not(.admin-body) .lightbox {
+  flex-direction: column;
+  justify-content: center;
+}
+
+body:not(.admin-body) .lightbox.is-loading .lightbox-loader {
+  opacity: 1;
+}
+
+body:not(.admin-body) .lightbox-loader {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  color: rgba(255,248,237,0.72);
+  opacity: 0;
+  transform: translate(-50%,-50%);
+  transition: opacity .18s ease;
+}
+
+body:not(.admin-body) .lightbox-info,
+body:not(.admin-body) .lightbox-actions {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #fff8ed;
+}
+
+body:not(.admin-body) .lightbox-info {
+  bottom: 86px;
+}
+
+body:not(.admin-body) .lightbox-info strong,
+body:not(.admin-body) .lightbox-info small {
+  display: block;
+}
+
+body:not(.admin-body) .lightbox-info small,
+body:not(.admin-body) #lightboxCounter {
+  color: rgba(255,248,237,0.62);
+  font-size: 12px;
+}
+
+body:not(.admin-body) .lightbox-actions {
+  top: 96px;
+  right: 22px;
+  bottom: auto;
+  left: auto;
+  width: 168px;
+  z-index: 9;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+body:not(.admin-body) .lightbox-actions button,
+body:not(.admin-body) .share-menu button,
+body:not(.admin-body) .story-tools button {
+  min-height: 40px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: 0 15px;
+  background: rgba(8,10,7,0.62);
+  color: #fff8ed;
+  font-weight: 900;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.32);
+}
+
+body:not(.admin-body) #lightboxLike[aria-pressed="true"] {
+  color: #e35d45;
+}
+
+body:not(.admin-body) .share-menu {
+  position: fixed;
+  right: 28px;
+  top: 244px;
+  bottom: auto;
+  z-index: 6;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  background: rgba(8,10,7,0.88);
+}
+
+body:not(.admin-body) .photo-qr {
+  width: 132px;
+  height: 132px;
+  justify-self: center;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+}
+
+body:not(.admin-body) .heart-pop {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  color: #e35d45;
+  font-size: clamp(64px, 12vw, 132px);
+  opacity: 0;
+  transform: translate(-50%,-50%) scale(.72);
+  pointer-events: none;
+}
+
+body:not(.admin-body) .heart-pop.show {
+  animation: boomHeart .68s ease forwards;
+}
+
+@keyframes boomHeart {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.72); }
+  32% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.18); }
+}
+
+body:not(.admin-body) .story-panel {
+  position: fixed;
+  inset: 18px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 18px;
+  background: rgba(8,10,7,0.94);
+}
+
+body:not(.admin-body) .story-tools {
+  display: flex;
+  align-content: start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body:not(.admin-body) .story-style-grid,
+body:not(.admin-body) .story-command-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+body:not(.admin-body) .story-control-group {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  color: rgba(255,248,237,0.76);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body:not(.admin-body) .story-segment,
+body:not(.admin-body) .story-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body:not(.admin-body) .story-swatch-row button {
+  min-width: 42px;
+  width: 42px;
+  height: 38px;
+  padding: 0;
+}
+
+body:not(.admin-body) .story-swatch-row button[data-story-color="auto"] {
+  width: auto;
+  min-width: 64px;
+  padding: 0 14px;
+}
+
+body:not(.admin-body) .story-swatch-row button[data-story-color="white"] { background: #fff; }
+body:not(.admin-body) .story-swatch-row button[data-story-color="black"] { background: #111; }
+body:not(.admin-body) .story-swatch-row button[data-story-color="gold"] { background: #d9a75d; }
+body:not(.admin-body) .story-swatch-row button[data-story-color="cream"] { background: #fff8ed; }
+
+body:not(.admin-body) .story-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: rgba(255,248,237,0.84);
+  font-weight: 800;
+}
+
+body:not(.admin-body) .story-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #d9a75d;
+}
+
+body:not(.admin-body) .story-tools button.active {
+  border-color: rgba(217,167,93,0.82);
+  background: rgba(217,167,93,0.22);
+  color: #fff8ed;
+}
+
+body:not(.admin-body) .story-text-field {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 4px 0 2px;
+  color: rgba(255,248,237,0.76);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body:not(.admin-body) #storyText {
+  min-height: 86px;
+  resize: vertical;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.06);
+  color: #fff8ed;
+  font: 700 15px/1.4 Outfit, sans-serif;
+  outline: none;
+}
+
+body:not(.admin-body) #storyText:focus {
+  border-color: rgba(217,167,93,0.7);
+  box-shadow: 0 0 0 3px rgba(217,167,93,0.12);
+}
+
+body:not(.admin-body) #storyCanvas {
+  width: min(100%, 360px);
+  max-height: calc(100vh - 60px);
+  justify-self: center;
+  border-radius: 10px;
+  background: #111;
+}
+
+@media (max-width: 760px) {
+  body:not(.admin-body) .lightbox-info {
+    bottom: 76px;
+  }
+
+  body:not(.admin-body) .lightbox-actions {
+    top: auto;
+    right: 14px;
+    left: 14px;
+    bottom: 18px;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body:not(.admin-body) .lightbox-actions button {
+    min-width: 48px;
+    padding: 0 12px;
+    font-size: 0;
+  }
+
+  body:not(.admin-body) .lightbox-actions button::first-letter {
+    font-size: 16px;
+  }
+
+  body:not(.admin-body) #lightboxLike {
+    font-size: 15px;
+  }
+
+  body:not(.admin-body) #lightboxShare::before { content: "↗"; font-size: 16px; }
+  body:not(.admin-body) #lightboxDownload::before { content: "↓"; font-size: 16px; }
+
+  body:not(.admin-body) .story-panel {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  body:not(.admin-body) .share-menu {
+    top: auto;
+    right: 14px;
+    bottom: 72px;
   }
 }
 

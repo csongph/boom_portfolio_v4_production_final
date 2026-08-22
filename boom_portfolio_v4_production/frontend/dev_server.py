@@ -20,7 +20,7 @@ ROUTES = {
 
 class PortfolioDevHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path.startswith("/api/"):
+        if self.path.startswith("/api/") or self.path.startswith("/go/"):
             self.proxy_api()
             return
         if self.path in {"/robots.txt", "/sitemap.xml"}:
@@ -46,7 +46,7 @@ class PortfolioDevHandler(SimpleHTTPRequestHandler):
 
     def proxy_api(self, proxy_path=None):
         path = proxy_path or self.path
-        if not path.startswith("/api/"):
+        if not (path.startswith("/api/") or path.startswith("/go/")):
             self.send_error(404, "File not found")
             return
 
@@ -89,7 +89,7 @@ def main():
 
     server = ThreadingHTTPServer((args.host, args.port), PortfolioDevHandler)
     print(f"Frontend running at http://{args.host}:{args.port}")
-    print(f"Proxying /api/* to {BACKEND_ORIGIN}")
+    print(f"Proxying /api/* and /go/* to {BACKEND_ORIGIN}")
     server.serve_forever()
 
 

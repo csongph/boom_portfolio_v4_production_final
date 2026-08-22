@@ -34,6 +34,23 @@ create table if not exists public.album_photos (
   created_at timestamptz not null default now(), unique(album_id,drive_file_id)
 );
 
+create table if not exists public.photo_likes (
+  id uuid primary key default gen_random_uuid(),
+  photo_id uuid not null references public.album_photos(id) on delete cascade,
+  anonymous_visitor_id text not null,
+  created_at timestamptz not null default now(),
+  unique(photo_id, anonymous_visitor_id)
+);
+
+create table if not exists public.photo_events (
+  id bigint generated always as identity primary key,
+  album_id uuid references public.albums(id) on delete cascade,
+  photo_id uuid references public.album_photos(id) on delete cascade,
+  anonymous_visitor_id text,
+  event_type text not null check (event_type in ('album_view','photo_view','download','share')),
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.contact_messages (
   id uuid primary key default gen_random_uuid(), name varchar(120) not null, email varchar(180) not null,
   subject varchar(180), message text not null, is_read boolean not null default false, is_archived boolean not null default false,
@@ -54,12 +71,17 @@ create table if not exists public.audit_logs (
 create index if not exists projects_pub_idx on public.projects(is_published,is_featured,sort_order);
 create index if not exists albums_pub_idx on public.albums(is_published,created_at desc);
 create index if not exists album_photos_album_idx on public.album_photos(album_id,sort_order);
+create index if not exists photo_likes_photo_idx on public.photo_likes(photo_id);
+create index if not exists photo_events_type_idx on public.photo_events(event_type,created_at desc);
+create index if not exists photo_events_photo_idx on public.photo_events(photo_id,event_type);
 create index if not exists messages_idx on public.contact_messages(is_archived,is_read,created_at desc);
 
 alter table public.site_settings enable row level security;
 alter table public.projects enable row level security;
 alter table public.albums enable row level security;
 alter table public.album_photos enable row level security;
+alter table public.photo_likes enable row level security;
+alter table public.photo_events enable row level security;
 alter table public.contact_messages enable row level security;
 alter table public.integration_tokens enable row level security;
 alter table public.audit_logs enable row level security;
@@ -80,6 +102,10 @@ alter table public.projects add column if not exists seo_title text;
 alter table public.projects add column if not exists seo_description text;
 alter table public.albums add column if not exists seo_title text;
 alter table public.albums add column if not exists seo_description text;
+alter table public.albums add column if not exists allow_downloads boolean not null default true;
+alter table public.albums add column if not exists allow_sharing boolean not null default true;
+alter table public.albums add column if not exists show_likes boolean not null default true;
+alter table public.albums add column if not exists download_quality text not null default 'high';
 alter table public.album_photos add column if not exists alt_text text;
 alter table public.album_photos add column if not exists is_hidden boolean not null default false;
 alter table public.contact_messages add column if not exists is_archived boolean not null default false;
