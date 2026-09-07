@@ -337,10 +337,17 @@ def unlike_photo(photo_id:str,payload:VisitorIn):
 
 @app.post("/api/photos/{photo_id}/event")
 def photo_event(photo_id:str,payload:PhotoEventIn):
-    visitor=clean_visitor(payload.anonymous_visitor_id); photo,album=photo_album(photo_id,True)
-    throttle(f"photo_event:{payload.event_type}:{photo_id}:{visitor}",30,600)
-    add_event(payload.event_type,visitor,photo["album_id"],photo_id)
-    return {"ok":True}
+    # Analytics is best-effort and must never interrupt the gallery.
+    try:
+        visitor=clean_visitor(payload.anonymous_visitor_id); photo,album=photo_album(photo_id,True)
+        throttle(f"photo_event:{payload.event_type}:{photo_id}:{visitor}",30,600)
+        add_event(payload.event_type,visitor,photo["album_id"],photo_id)
+        return {"ok":True,"tracked":True}
+    except HTTPException as exc:
+        if exc.status_code in (400,404,422,429):raise
+        return {"ok":True,"tracked":False}
+    except Exception:
+        return {"ok":True,"tracked":False}
 
 @app.get("/api/photos/{photo_id}/download")
 async def download_photo(photo_id:str,visitor_id:str|None=None):
