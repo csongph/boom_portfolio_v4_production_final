@@ -3,7 +3,7 @@
    All pages: index, work, photography, about, contact, admin
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ── Variables ─────────────────────────────────────────────── */
 :root {
@@ -153,6 +153,51 @@ body:not(.admin-body) .photography-page #albumGrid .album-card-mini { animation:
   body:not(.admin-body) #albumDetail .photo-tile img,
   body:not(.admin-body) #lightboxImage { transition:none; }
 }
+
+/* Darkroom finishing layer, responsive media and metadata sheet. */
+body:not(.admin-body) .photography-page,
+body:not(.admin-body):has(#albumDetail) {
+  --darkroom-red:#b93421;
+  --darkroom-orange:#ef7948;
+  --darkroom-cream:#f2dfca;
+}
+body:not(.admin-body) .photography-page .page-title,
+body:not(.admin-body) .photography-page h2,
+body:not(.admin-body) #albumDetail .page-title {
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-weight:600;
+  letter-spacing:-.025em;
+}
+body:not(.admin-body) .photography-page .eyebrow,
+body:not(.admin-body) #albumDetail .eyebrow { color:var(--darkroom-orange); }
+.lqip-image { filter:blur(16px) saturate(.72);opacity:.72;transform:scale(1.025);background:#170b08; }
+.lqip-image.is-developing { filter:blur(12px) saturate(.78);opacity:.8; }
+.lqip-image.is-developed { filter:blur(0) saturate(1);opacity:1;transform:scale(1); }
+.skeleton-card,.featured-skeleton { position:relative;overflow:hidden;background:#160c0a!important; }
+.masonry-skeleton { position:relative;break-inside:avoid;margin:0 0 12px;border-radius:7px;overflow:hidden;background:#160c0a; }
+.skeleton-card::after,.featured-skeleton::after,.masonry-skeleton::after { content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(235,89,47,.12),transparent);animation:darkroom-shimmer 1.35s infinite; }
+@keyframes darkroom-shimmer { to{transform:translateX(100%)} }
+.photo-credit { position:fixed;z-index:1004;top:max(24px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:rgba(255,230,211,.6);font-size:12px;white-space:nowrap; }
+.photo-credit a { display:inline-flex;align-items:center;min-height:44px;padding:0 5px;color:#ef946b;text-decoration:none; }
+.photo-credit a:hover { color:#ffd0b9;text-decoration:underline; }
+.exif-toggle { position:fixed;z-index:1005;top:max(78px,calc(env(safe-area-inset-top) + 58px));left:max(18px,env(safe-area-inset-left));min-width:44px;min-height:44px;padding:0 14px;border:1px solid rgba(239,121,72,.35);border-radius:999px;background:rgba(18,7,5,.78);color:#f2dfca;backdrop-filter:blur(12px); }
+.exif-sheet { position:fixed;z-index:1010;left:50%;bottom:max(18px,env(safe-area-inset-bottom));width:min(620px,calc(100% - 28px));transform:translateX(-50%);padding:18px;border:1px solid rgba(239,121,72,.28);border-radius:18px;background:rgba(18,8,6,.96);color:#f5e7d9;box-shadow:0 24px 80px rgba(0,0,0,.58);backdrop-filter:blur(18px); }
+.exif-sheet[hidden] { display:none; }
+.exif-sheet-head { display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px; }
+.exif-sheet-head strong { font-family:'Cormorant Garamond',Georgia,serif;font-size:25px; }
+.exif-sheet-head button { width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:24px; }
+.exif-content { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
+.exif-content div { min-width:0;padding:11px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.035); }
+.exif-content small,.exif-content strong { display:block;overflow-wrap:anywhere; }
+.exif-content small { color:rgba(255,225,207,.55);font-size:11px; }
+.exif-content strong { margin-top:3px;font-size:13px; }
+@media (max-width:620px) {
+  .photo-credit { top:max(10px,env(safe-area-inset-top));font-size:11px; }
+  .exif-toggle { top:max(62px,calc(env(safe-area-inset-top) + 50px));left:12px; }
+  .exif-sheet { bottom:0;width:100%;max-height:min(62dvh,520px);overflow:auto;border-radius:20px 20px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom)); }
+  .exif-content { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion:reduce) { .skeleton-card::after,.featured-skeleton::after,.masonry-skeleton::after { animation:none; } }
 
 /* ── Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

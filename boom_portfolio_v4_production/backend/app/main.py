@@ -8,11 +8,12 @@ import httpx
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from .database import db
 from .security import require_admin
-from .drive import folder_id_from, list_images, image_bytes, folder_name
+from .drive import folder_id_from, list_images, image_bytes, optimized_image_bytes, image_exif, folder_name
 from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn, AIContentIn, VisitorIn, PhotoEventIn, AlbumViewIn
 from .config import get_settings
 from .github_import import analyze_repo
 from .integrations import google_auth_url, decode_state, google_exchange, save_google_token, google_status, disconnect_google
+from .instagram import instagram_media
 
 app=FastAPI(title="BOOM Portfolio API",version="4.0.0",docs_url="/api/docs",openapi_url="/api/openapi.json")
 s=get_settings()
@@ -242,6 +243,9 @@ def projects(featured: bool|None=None,q: str|None=None):
         x=q.lower(); rows=[p for p in rows if x in (p.get("title") or "").lower() or any(x in str(t).lower() for t in p.get("tech_stack") or [])]
     return rows
 
+@app.get("/api/instagram/media")
+async def public_instagram_media():return await instagram_media()
+
 @app.get("/api/projects/{slug}")
 def project(slug:str): return one("projects","slug",slug,True)
 
@@ -344,18 +348,24 @@ async def download_photo(photo_id:str,visitor_id:str|None=None):
     if not album.get("allow_downloads",True): raise HTTPException(403,"Downloads are disabled for this album")
     visitor=clean_visitor(visitor_id) if visitor_id else None
     if visitor: throttle(f"photo_download:{photo_id}:{visitor}",12,600)
-    content,ctype=await image_bytes(photo["drive_file_id"],primary_admin(),allow_public_fallback=True)
+    widths={"web":1200,"high":2000,"original":2000};width=widths.get(album.get("download_quality","high"),2000)
+    content,ctype,_,_=await optimized_image_bytes(photo["drive_file_id"],primary_admin(),width=width,quality=88)
     add_event("download",visitor,photo["album_id"],photo_id)
     index=(photo.get("sort_order") or 0)+1
     name=f"CSBOOM_{safe_filename(album.get('title'))}_{index:03d}.jpg"
     return Response(content,media_type=ctype,headers={"Content-Disposition":f'attachment; filename="{name}"',"Cache-Control":"private,max-age=0"})
 
 @app.get("/api/drive/image/{file_id}")
-async def drive_image(file_id:str,token:str|None=None):
+async def drive_image(file_id:str,token:str|None=None,w:int=Query(1600,ge=64,le=2000),q:int=Query(84,ge=45,le=90)):
     if token: decode_image_token(token,file_id)
     else: require_published_image(file_id)
-    content,ctype=await image_bytes(file_id,primary_admin(),allow_public_fallback=True)
-    return Response(content=content,media_type=ctype,headers={"Cache-Control":"public,max-age=86400,stale-while-revalidate=604800"})
+    content,ctype,width,height=await optimized_image_bytes(file_id,primary_admin(),width=w,quality=q)
+    return Response(content=content,media_type=ctype,headers={"Cache-Control":"public,max-age=86400,stale-while-revalidate=604800","X-Image-Width":str(width),"X-Image-Height":str(height)})
+
+@app.get("/api/photos/{photo_id}/exif")
+async def photo_exif(photo_id:str):
+    photo,_=photo_album(photo_id,True)
+    return await image_exif(photo["drive_file_id"],primary_admin())
 
 @app.get("/api/qr")
 async def qr_code(data:str=Query(...,min_length=8,max_length=800)):

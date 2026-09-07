@@ -1,10 +1,28 @@
 import re
+import io
+import time
+from collections import OrderedDict
 import httpx
 from fastapi import HTTPException
+from PIL import Image, ImageOps, ExifTags
 from .config import get_settings
 from .integrations import google_access_token
 
 API="https://www.googleapis.com/drive/v3"
+_MEDIA_CACHE=OrderedDict()
+_MEDIA_CACHE_TTL=60*60*3
+_MEDIA_CACHE_MAX=96
+
+def _cache_get(key):
+    item=_MEDIA_CACHE.get(key)
+    if not item:return None
+    expires,value=item
+    if expires<time.time():_MEDIA_CACHE.pop(key,None);return None
+    _MEDIA_CACHE.move_to_end(key);return value
+
+def _cache_set(key,value):
+    _MEDIA_CACHE[key]=(time.time()+_MEDIA_CACHE_TTL,value);_MEDIA_CACHE.move_to_end(key)
+    while len(_MEDIA_CACHE)>_MEDIA_CACHE_MAX:_MEDIA_CACHE.popitem(last=False)
 
 def folder_id_from(value: str) -> str:
     value=value.strip()
@@ -111,3 +129,42 @@ async def image_bytes(file_id: str, admin_email: str | None = None, allow_public
 
     if oauth_error: raise oauth_error
     raise HTTPException(502,"โหลดรูปจาก Google Drive ไม่สำเร็จ")
+
+async def optimized_image_bytes(file_id: str, admin_email: str | None = None, width: int = 1600, quality: int = 84):
+    width=max(64,min(int(width),2000));quality=max(45,min(int(quality),90));key=(file_id,width,quality)
+    cached=_cache_get(key)
+    if cached:return cached
+    content,_=await image_bytes(file_id,admin_email,allow_public_fallback=True)
+    try:
+        with Image.open(io.BytesIO(content)) as source:
+            image=ImageOps.exif_transpose(source)
+            if image.width>width:
+                height=max(1,round(image.height*width/image.width));image=image.resize((width,height),Image.Resampling.LANCZOS)
+            if max(image.size)>2000:
+                scale=2000/max(image.size);image=image.resize((max(1,round(image.width*scale)),max(1,round(image.height*scale))),Image.Resampling.LANCZOS)
+            if image.mode not in ("RGB","L"):
+                background=Image.new("RGB",image.size,(12,8,7))
+                if "A" in image.getbands():background.paste(image,mask=image.getchannel("A"))
+                else:background.paste(image)
+                image=background
+            elif image.mode=="L":image=image.convert("RGB")
+            output=io.BytesIO();image.save(output,"JPEG",quality=quality,optimize=True,progressive=True)
+            value=(output.getvalue(),"image/jpeg",image.width,image.height)
+    except Exception:
+        raise HTTPException(422,"ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ")
+    _cache_set(key,value);return value
+
+async def image_exif(file_id: str, admin_email: str | None = None):
+    key=("exif",file_id);cached=_cache_get(key)
+    if cached:return cached
+    content,_=await image_bytes(file_id,admin_email,allow_public_fallback=True)
+    try:
+        with Image.open(io.BytesIO(content)) as image:
+            raw=image.getexif();named={ExifTags.TAGS.get(k,k):v for k,v in raw.items()}
+        def text(name):
+            value=named.get(name)
+            if value in (None,""):return None
+            return str(value)
+        result={"camera":" ".join(x for x in [text("Make"),text("Model")] if x).strip() or None,"lens":text("LensModel"),"f_stop":f"f/{float(named['FNumber']):g}" if named.get("FNumber") else None,"iso":f"ISO {named['ISOSpeedRatings']}" if named.get("ISOSpeedRatings") else None,"shutter":text("ExposureTime"),"focal_length":f"{float(named['FocalLength']):g} mm" if named.get("FocalLength") else None}
+    except Exception:result={}
+    result={k:v for k,v in result.items() if v};_cache_set(key,result);return result
