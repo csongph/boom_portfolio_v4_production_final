@@ -283,6 +283,34 @@ def track_album_view(payload:AlbumViewIn):
     add_event("album_view",visitor,payload.album_id,None)
     return {"ok":True}
 
+@app.get("/api/photography/featured")
+def featured_photography(limit:int=Query(5,ge=1,le=12)):
+    albums=db().table("albums").select("id,title,slug,category").eq("is_published",True).execute().data or []
+    if not albums:return []
+    album_map={str(a["id"]):a for a in albums}
+    photos=db().table("album_photos").select("id,album_id,drive_file_id,file_name,alt_text,width,height,sort_order").in_("album_id",list(album_map)).eq("is_hidden",False).execute().data or []
+    if not photos:return []
+    photo_ids=[str(p["id"]) for p in photos]
+    metrics={pid:{"likes":0,"shares":0,"downloads":0,"views":0} for pid in photo_ids}
+    try:
+        for row in db().table("photo_likes").select("photo_id").in_("photo_id",photo_ids).execute().data or []:
+            pid=str(row.get("photo_id"))
+            if pid in metrics:metrics[pid]["likes"]+=1
+    except Exception:pass
+    try:
+        event_keys={"share":"shares","download":"downloads","photo_view":"views"}
+        for row in db().table("photo_events").select("photo_id,event_type").in_("photo_id",photo_ids).execute().data or []:
+            pid=str(row.get("photo_id"));key=event_keys.get(row.get("event_type"))
+            if pid in metrics and key:metrics[pid][key]+=1
+    except Exception:pass
+    ranked=[]
+    for p in photos:
+        pid=str(p["id"]);m=metrics[pid];a=album_map.get(str(p["album_id"]),{})
+        score=m["likes"]*6+m["shares"]*5+m["downloads"]*3+m["views"]
+        ranked.append({**p,**m,"engagement_score":score,"image_url":f"/api/drive/image/{p['drive_file_id']}","album_title":a.get("title"),"album_slug":a.get("slug"),"category":a.get("category") or "Photography"})
+    ranked.sort(key=lambda p:(-p["engagement_score"],p.get("sort_order") or 0,str(p["id"])))
+    return ranked[:limit]
+
 @app.post("/api/photos/{photo_id}/like")
 def like_photo(photo_id:str,payload:VisitorIn):
     visitor=clean_visitor(payload.anonymous_visitor_id); photo,album=photo_album(photo_id,True)
