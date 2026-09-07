@@ -1,14 +1,14 @@
 import copy, html, json, re, time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
-from fastapi import FastAPI, Depends, HTTPException, Request, Query
+from fastapi import FastAPI, Depends, HTTPException, Request, Query, BackgroundTasks
 from fastapi.responses import Response, RedirectResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from .database import db
 from .security import require_admin
-from .drive import folder_id_from, list_images, image_bytes, optimized_image_bytes, image_exif, folder_name
+from .drive import folder_id_from, list_images, image_bytes, optimized_image_bytes, image_exif, folder_name, warm_cache
 from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn, AIContentIn, VisitorIn, PhotoEventIn, AlbumViewIn
 from .config import get_settings
 from .github_import import analyze_repo
@@ -582,14 +582,18 @@ async def admin_album(album_id:str,admin=Depends(require_admin)):
     return a
 
 @app.post("/api/admin/albums")
-async def create_album(payload:AlbumIn,admin=Depends(require_admin)):
+async def create_album(payload:AlbumIn,background_tasks:BackgroundTasks,admin=Depends(require_admin)):
     allp=await list_images(payload.drive_folder_id,admin["email"]);lookup={p["id"]:p for p in allp};selected=[lookup[x] for x in payload.selected_file_ids if x in lookup]
     if not selected:raise HTTPException(400,"ไม่ได้เลือกรูป")
     cover=payload.cover_drive_file_id if payload.cover_drive_file_id in {p['id'] for p in selected} else selected[0]["id"]
     data={"title":payload.title,"slug":unique_slug("albums",payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":payload.is_published,"allow_downloads":payload.allow_downloads,"allow_sharing":payload.allow_sharing,"show_likes":payload.show_likes,"download_quality":payload.download_quality,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
     try:ar=db().table("albums").insert(data).execute()
     except Exception:raise HTTPException(409,"Album slug ซ้ำหรือข้อมูลไม่ถูกต้อง")
-    a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":p["name"],"sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)});return {"album":a,"photo_count":len(rows)}
+    a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":p["name"],"sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)})
+    # Pre-render+cache the widths the public gallery will request, so the first
+    # real visitor doesn't pay for a cold Drive fetch + resize on every photo.
+    background_tasks.add_task(warm_cache,[p["id"] for p in selected],admin["email"])
+    return {"album":a,"photo_count":len(rows)}
 
 @app.put("/api/admin/albums/{album_id}")
 async def update_album(album_id:str,payload:AlbumUpdate,admin=Depends(require_admin)):
