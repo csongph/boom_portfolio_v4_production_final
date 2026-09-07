@@ -199,6 +199,26 @@ async def optimized_image_bytes(file_id: str, admin_email: str | None = None, wi
 
     _cache_set(key,value);return value
 
+async def warm_cache(file_ids: list[str], admin_email: str | None = None, widths=(64, 480, 800, 1200)):
+    """Pre-generate + cache the image variants the gallery will request.
+
+    Call this right after new photos are added to an album (fire-and-forget,
+    e.g. via FastAPI BackgroundTasks). Without it, the *first* visitor to open
+    a brand-new album pays the full Drive-fetch + resize cost for every photo
+    and every width — which is exactly the "first open is slow" symptom.
+    Concurrency is capped so this doesn't hammer the Drive API.
+    """
+    semaphore = asyncio.Semaphore(4)
+
+    async def _one(file_id: str, width: int):
+        async with semaphore:
+            try:
+                await optimized_image_bytes(file_id, admin_email, width=width, quality=84)
+            except Exception:
+                pass  # best-effort warmup — a failure here just means no head start, not an error
+
+    await asyncio.gather(*[_one(fid, w) for fid in file_ids for w in widths])
+
 async def image_exif(file_id: str, admin_email: str | None = None):
     key=("exif",file_id);cached=_cache_get(key)
     if cached:return cached
