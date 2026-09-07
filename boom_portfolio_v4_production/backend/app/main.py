@@ -316,7 +316,7 @@ async def download_photo(photo_id:str,visitor_id:str|None=None):
     if not album.get("allow_downloads",True): raise HTTPException(403,"Downloads are disabled for this album")
     visitor=clean_visitor(visitor_id) if visitor_id else None
     if visitor: throttle(f"photo_download:{photo_id}:{visitor}",12,600)
-    content,ctype=await image_bytes(photo["drive_file_id"],primary_admin())
+    content,ctype=await image_bytes(photo["drive_file_id"],primary_admin(),allow_public_fallback=True)
     add_event("download",visitor,photo["album_id"],photo_id)
     index=(photo.get("sort_order") or 0)+1
     name=f"CSBOOM_{safe_filename(album.get('title'))}_{index:03d}.jpg"
@@ -326,7 +326,7 @@ async def download_photo(photo_id:str,visitor_id:str|None=None):
 async def drive_image(file_id:str,token:str|None=None):
     if token: decode_image_token(token,file_id)
     else: require_published_image(file_id)
-    content,ctype=await image_bytes(file_id,primary_admin())
+    content,ctype=await image_bytes(file_id,primary_admin(),allow_public_fallback=True)
     return Response(content=content,media_type=ctype,headers={"Cache-Control":"public,max-age=86400,stale-while-revalidate=604800"})
 
 @app.get("/api/qr")
@@ -488,7 +488,7 @@ async def create_album(payload:AlbumIn,admin=Depends(require_admin)):
     allp=await list_images(payload.drive_folder_id,admin["email"]);lookup={p["id"]:p for p in allp};selected=[lookup[x] for x in payload.selected_file_ids if x in lookup]
     if not selected:raise HTTPException(400,"ไม่ได้เลือกรูป")
     cover=payload.cover_drive_file_id if payload.cover_drive_file_id in {p['id'] for p in selected} else selected[0]["id"]
-    data={"title":payload.title,"slug":unique_slug("albums",payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":True,"allow_downloads":payload.allow_downloads,"allow_sharing":payload.allow_sharing,"show_likes":payload.show_likes,"download_quality":payload.download_quality,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
+    data={"title":payload.title,"slug":unique_slug("albums",payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":payload.is_published,"allow_downloads":payload.allow_downloads,"allow_sharing":payload.allow_sharing,"show_likes":payload.show_likes,"download_quality":payload.download_quality,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
     try:ar=db().table("albums").insert(data).execute()
     except Exception:raise HTTPException(409,"Album slug ซ้ำหรือข้อมูลไม่ถูกต้อง")
     a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":p["name"],"sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)});return {"album":a,"photo_count":len(rows)}
@@ -520,7 +520,7 @@ async def update_settings(payload:SettingsIn,admin=Depends(require_admin)):
     data={"id":1,**payload.model_dump(),"updated_at":nowiso()};r=db().table("site_settings").upsert(data).execute();audit(admin["email"],"settings.update","settings","1");return r.data[0]
 
 @app.get("/api/admin/integrations/google/status")
-async def google_connection(admin=Depends(require_admin)):return google_status(admin["email"])
+async def google_connection(admin=Depends(require_admin)):return await google_status(admin["email"])
 @app.get("/api/admin/integrations/google/start")
 async def google_start(admin=Depends(require_admin)):return {"authorization_url":google_auth_url(admin["email"])}
 @app.delete("/api/admin/integrations/google")
