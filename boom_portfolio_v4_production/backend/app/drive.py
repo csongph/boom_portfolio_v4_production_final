@@ -1,7 +1,10 @@
 import re
 import io
+import os
 import time
 import asyncio
+import hashlib
+from pathlib import Path
 from collections import OrderedDict
 import httpx
 from fastapi import HTTPException
@@ -11,8 +14,22 @@ from .integrations import google_access_token
 
 API="https://www.googleapis.com/drive/v3"
 _MEDIA_CACHE=OrderedDict()
-_MEDIA_CACHE_TTL=60*60*3
-_MEDIA_CACHE_MAX=96
+_MEDIA_CACHE_TTL=60*60*6
+# Was 96 — with 5 srcset widths + an LQIP pass per photo, that overflows after
+# ~15-20 photos, so growing the library made almost every request a cache miss
+# (full Drive re-fetch + re-resize, for everyone). Raised well above a typical
+# gallery's working set.
+_MEDIA_CACHE_MAX=int(os.getenv("MEDIA_CACHE_MAX","600"))
+
+# Second tier: when an item falls out of the in-memory cache (restart, or the
+# cache above still overflows on a very large library), check disk before
+# going back to Google Drive. Cheap insurance, no new dependency.
+_DISK_CACHE_DIR=Path(os.getenv("IMAGE_DISK_CACHE_DIR","/tmp/drive_image_cache"))
+_DISK_CACHE_DIR.mkdir(parents=True,exist_ok=True)
+
+def _disk_cache_path(file_id:str,width:int,quality:int)->Path:
+    key=hashlib.sha256(f"{file_id}:{width}:{quality}".encode()).hexdigest()
+    return _DISK_CACHE_DIR/f"{key}.jpg"
 
 async def _resilient_get(client, url, **kwargs):
     """Retry transient Drive/CDN failures before surfacing an unavailable image."""
@@ -147,6 +164,17 @@ async def optimized_image_bytes(file_id: str, admin_email: str | None = None, wi
     width=max(64,min(int(width),2000));quality=max(45,min(int(quality),90));key=(file_id,width,quality)
     cached=_cache_get(key)
     if cached:return cached
+
+    disk_path=_disk_cache_path(file_id,width,quality)
+    if disk_path.exists():
+        try:
+            data=disk_path.read_bytes()
+            with Image.open(io.BytesIO(data)) as img:w,h=img.size
+            value=(data,"image/jpeg",w,h)
+            _cache_set(key,value);return value
+        except Exception:
+            pass  # corrupted/partial cache file — fall through and regenerate
+
     content,_=await image_bytes(file_id,admin_email,allow_public_fallback=True)
     try:
         with Image.open(io.BytesIO(content)) as source:
@@ -165,6 +193,10 @@ async def optimized_image_bytes(file_id: str, admin_email: str | None = None, wi
             value=(output.getvalue(),"image/jpeg",image.width,image.height)
     except Exception:
         raise HTTPException(422,"ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ")
+
+    try:disk_path.write_bytes(value[0])
+    except Exception:pass  # disk cache is best-effort, never block the response on it
+
     _cache_set(key,value);return value
 
 async def image_exif(file_id: str, admin_email: str | None = None):
