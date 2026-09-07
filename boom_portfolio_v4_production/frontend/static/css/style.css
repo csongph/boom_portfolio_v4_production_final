@@ -68,6 +68,63 @@
   .album-list-heading .filter-row { justify-content:flex-start; }
 }
 
+/* Album masonry — preserves each photograph's original aspect ratio. */
+body:not(.admin-body) #albumDetail .photo-grid {
+  display:block;
+  columns:4;
+  column-gap:12px;
+  width:100%;
+}
+body:not(.admin-body) #albumDetail .photo-tile {
+  display:block;
+  break-inside:avoid;
+  width:100%;
+  min-height:44px;
+  margin:0 0 12px;
+  overflow:hidden;
+  border-radius:7px;
+  background:rgba(82,22,12,.18);
+  touch-action:manipulation;
+}
+body:not(.admin-body) #albumDetail .photo-tile img {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  border-radius:7px;
+  transition:opacity .28s ease,filter .42s ease,transform .35s ease;
+}
+body:not(.admin-body) #albumDetail .photo-tile:hover img { transform:scale(1.012); }
+@media (max-width:1100px) { body:not(.admin-body) #albumDetail .photo-grid { columns:3; } }
+@media (max-width:700px) { body:not(.admin-body) #albumDetail .photo-grid { columns:2;column-gap:8px; } body:not(.admin-body) #albumDetail .photo-tile { margin-bottom:8px; } }
+@media (max-width:380px) { body:not(.admin-body) #albumDetail .photo-grid { columns:1; } }
+
+/* Full-screen touch viewer. Controls remain outside the photograph. */
+body:not(.admin-body) .lightbox.open {
+  overscroll-behavior:contain;
+  touch-action:none;
+}
+html.lightbox-lock,html.lightbox-lock body { overflow:hidden;overscroll-behavior:none; }
+body:not(.admin-body) #lightboxImage {
+  transform:translate3d(var(--pan-x,0),var(--pan-y,0),0) scale(var(--zoom,1));
+  transform-origin:center;
+  transition:transform .18s ease;
+  will-change:transform;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+body:not(.admin-body) .lightbox.is-zooming #lightboxImage { transition:none;cursor:zoom-out; }
+body:not(.admin-body) #lightboxClose,
+body:not(.admin-body) .lightbox-nav,
+body:not(.admin-body) .lightbox-actions button { min-width:44px;min-height:44px; }
+@media (orientation:landscape) and (max-height:560px) {
+  body:not(.admin-body) #lightboxImage { max-height:72dvh; }
+  body:not(.admin-body) .lightbox-info { bottom:10px; }
+  body:not(.admin-body) .lightbox-actions { top:10px;right:110px;left:auto;bottom:auto; }
+}
+
 /* ── Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
