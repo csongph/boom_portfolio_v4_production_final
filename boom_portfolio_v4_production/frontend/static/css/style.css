@@ -125,6 +125,35 @@ body:not(.admin-body) .lightbox-actions button { min-width:44px;min-height:44px;
   body:not(.admin-body) .lightbox-actions { top:10px;right:110px;left:auto;bottom:auto; }
 }
 
+/* Photography category filter: one scrollable row on small screens. */
+body:not(.admin-body) .photography-page #albumFilters {
+  display:flex;
+  flex-wrap:nowrap;
+  gap:8px;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+  padding:4px 2px 8px;
+}
+body:not(.admin-body) .photography-page #albumFilters::-webkit-scrollbar { display:none; }
+body:not(.admin-body) .photography-page #albumFilters .filter-chip {
+  flex:0 0 auto;
+  min-height:44px;
+  padding:10px 16px;
+  scroll-snap-align:start;
+  white-space:nowrap;
+}
+body:not(.admin-body) .photography-page #albumGrid .album-card-mini { animation:album-filter-in .24s ease both; }
+@keyframes album-filter-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce) {
+  body:not(.admin-body) .photography-page #albumGrid .album-card-mini { animation:none; }
+  body:not(.admin-body) #albumDetail .photo-tile img,
+  body:not(.admin-body) #lightboxImage { transition:none; }
+}
+
 /* ── Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
