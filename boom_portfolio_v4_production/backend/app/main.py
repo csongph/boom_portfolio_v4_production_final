@@ -1,4 +1,4 @@
-import html, json, re, time
+import copy, html, json, re, time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request, Query
@@ -20,6 +20,28 @@ s=get_settings()
 app.add_middleware(CORSMiddleware,allow_origins=s.cors_origin_list,allow_credentials=False,allow_methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"],allow_headers=["Content-Type","Authorization"])
 
 _rate=defaultdict(deque)
+_public_cache={}
+_PUBLIC_CACHE_TTL=300
+
+def retry_query(fn, attempts=3):
+    last_error=None
+    for attempt in range(attempts):
+        try:return fn()
+        except Exception as exc:
+            last_error=exc
+            if attempt+1<attempts:time.sleep(.25*(2**attempt))
+    raise last_error
+
+def public_cache_get(key, allow_stale=False):
+    item=_public_cache.get(key)
+    if not item:return None
+    created,value=item
+    if not allow_stale and time.time()-created>_PUBLIC_CACHE_TTL:return None
+    return copy.deepcopy(value)
+
+def public_cache_set(key,value):
+    _public_cache[key]=(time.time(),copy.deepcopy(value))
+    return value
 def nowiso(): return datetime.now(timezone.utc).isoformat()
 def throttle(key: str, limit: int, seconds: int):
     now=time.time(); dq=_rate[key]
@@ -184,6 +206,8 @@ def require_published_image(file_id: str):
 @app.middleware("http")
 async def security_headers(request,call_next):
     response=await call_next(request)
+    if request.method!="GET" and request.url.path.startswith("/api/admin/albums") and response.status_code<400:
+        _public_cache.clear()
     response.headers["X-Content-Type-Options"]="nosniff"
     response.headers["X-Frame-Options"]="DENY"
     response.headers["Referrer-Policy"]="strict-origin-when-cross-origin"
@@ -251,19 +275,43 @@ def project(slug:str): return one("projects","slug",slug,True)
 
 @app.get("/api/albums")
 def albums(category:str|None=None):
-    q=db().table("albums").select("*").eq("is_published",True).order("created_at",desc=True)
-    if category:q=q.eq("category",category)
-    rows=q.execute().data or []
-    for a in rows:
-        a["cover_url"]=f"/api/drive/image/{a['cover_drive_file_id']}" if a.get("cover_drive_file_id") else None
-        a["photo_count"]=len(db().table("album_photos").select("id").eq("album_id",a["id"]).eq("is_hidden",False).execute().data or [])
-    return rows
+    cache_key=("albums",category or "*")
+    cached=public_cache_get(cache_key)
+    if cached is not None:return cached
+    try:
+        def load_albums():
+            q=db().table("albums").select("*").eq("is_published",True).order("created_at",desc=True)
+            if category:q=q.eq("category",category)
+            return q.execute().data or []
+        rows=retry_query(load_albums)
+        ids=[a["id"] for a in rows]
+        photos=retry_query(lambda:db().table("album_photos").select("id,album_id").in_("album_id",ids).eq("is_hidden",False).execute().data or []) if ids else []
+        counts=defaultdict(int)
+        for photo in photos:counts[str(photo.get("album_id"))]+=1
+        for a in rows:
+            a["cover_url"]=f"/api/drive/image/{a['cover_drive_file_id']}" if a.get("cover_drive_file_id") else None
+            a["photo_count"]=counts[str(a["id"])]
+        return public_cache_set(cache_key,rows)
+    except Exception:
+        stale=public_cache_get(cache_key,allow_stale=True)
+        if stale is not None:return stale
+        raise HTTPException(503,"Photography albums are temporarily unavailable")
 
 @app.get("/api/albums/{slug}")
 def album(slug:str, visitor_id: str|None=None):
-    a=one("albums","slug",slug,True)
+    cache_key=("album",slug)
+    base=public_cache_get(cache_key)
+    try:
+        if base is None:
+            a=retry_query(lambda:one("albums","slug",slug,True))
+            photos=retry_query(lambda:db().table("album_photos").select("*").eq("album_id",a["id"]).eq("is_hidden",False).order("sort_order").execute().data or [])
+            base=public_cache_set(cache_key,{"album":a,"photos":photos})
+    except HTTPException:raise
+    except Exception:
+        base=public_cache_get(cache_key,allow_stale=True)
+        if base is None:raise HTTPException(503,"This album is temporarily unavailable")
+    a=base["album"];photos=base["photos"]
     a.setdefault("allow_downloads",True); a.setdefault("allow_sharing",True); a.setdefault("show_likes",True); a.setdefault("download_quality","high")
-    photos=db().table("album_photos").select("*").eq("album_id",a["id"]).eq("is_hidden",False).order("sort_order").execute().data or []
     for p in photos:p["image_url"]=f"/api/drive/image/{p['drive_file_id']}"
     ids=[p["id"] for p in photos]
     like_counts={pid:0 for pid in ids}; liked=set()
@@ -283,9 +331,14 @@ def album(slug:str, visitor_id: str|None=None):
 
 @app.post("/api/albums/view")
 def track_album_view(payload:AlbumViewIn):
-    visitor=clean_visitor(payload.anonymous_visitor_id); throttle(f"album_view:{payload.album_id}:{visitor}",8,600)
-    add_event("album_view",visitor,payload.album_id,None)
-    return {"ok":True}
+    try:
+        visitor=clean_visitor(payload.anonymous_visitor_id); throttle(f"album_view:{payload.album_id}:{visitor}",8,600)
+        add_event("album_view",visitor,payload.album_id,None)
+        return {"ok":True,"tracked":True}
+    except HTTPException as exc:
+        if exc.status_code in (400,422,429):raise
+        return {"ok":True,"tracked":False}
+    except Exception:return {"ok":True,"tracked":False}
 
 @app.get("/api/photography/featured")
 def featured_photography(limit:int=Query(5,ge=1,le=12)):
