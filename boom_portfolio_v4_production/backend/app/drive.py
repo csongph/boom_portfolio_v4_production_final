@@ -73,10 +73,41 @@ async def folder_name(folder_id: str, admin_email: str | None = None):
     if r.is_error: return None
     return (r.json() or {}).get("name")
 
-async def image_bytes(file_id: str, admin_email: str | None = None):
-    auth=await _auth(admin_email)
-    params={**auth["params"],"alt":"media"}
+async def image_bytes(file_id: str, admin_email: str | None = None, allow_public_fallback: bool = False):
+    """Load a Drive image without letting an expired OAuth token take down public galleries.
+
+    Private files still use the connected admin account. Published, link-shared files may
+    fall back to the API key or Google's public image CDN while the admin reconnects OAuth.
+    """
+    attempts=[]
+    oauth_error=None
+    if admin_email:
+        try:
+            attempts.append(await _auth(admin_email))
+        except HTTPException as exc:
+            oauth_error=exc
+
+    key=get_settings().google_drive_api_key
+    if allow_public_fallback and key:
+        key_auth={"headers":{},"params":{"key":key}}
+        if key_auth not in attempts: attempts.append(key_auth)
+
     async with httpx.AsyncClient(timeout=60,follow_redirects=True) as client:
-        r=await client.get(f"{API}/files/{file_id}",params=params,headers=auth["headers"])
-    if r.is_error: raise HTTPException(r.status_code,"โหลดรูปจาก Google Drive ไม่สำเร็จ")
-    return r.content,r.headers.get("content-type","image/jpeg")
+        for auth in attempts:
+            r=await client.get(
+                f"{API}/files/{file_id}",
+                params={**auth["params"],"alt":"media"},
+                headers=auth["headers"],
+            )
+            if not r.is_error and r.headers.get("content-type","").lower().startswith("image/"):
+                return r.content,r.headers.get("content-type","image/jpeg")
+
+        if allow_public_fallback:
+            # Works only for files shared as "Anyone with the link". Validate the media
+            # type so an HTML permission page is never cached as an image.
+            r=await client.get(f"https://lh3.googleusercontent.com/d/{file_id}=w2400")
+            if not r.is_error and r.headers.get("content-type","").lower().startswith("image/"):
+                return r.content,r.headers.get("content-type","image/jpeg")
+
+    if oauth_error: raise oauth_error
+    raise HTTPException(502,"โหลดรูปจาก Google Drive ไม่สำเร็จ")
