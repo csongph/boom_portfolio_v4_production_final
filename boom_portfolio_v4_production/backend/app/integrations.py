@@ -67,9 +67,15 @@ async def google_access_token(admin_email: str):
     new=r.json(); new["refresh_token"]=refresh; save_google_token(admin_email,new)
     return new.get("access_token")
 
-def google_status(admin_email: str):
+async def google_status(admin_email: str):
     r=db().table("integration_tokens").select("id,updated_at").eq("provider","google_drive").eq("owner_email",admin_email).limit(1).execute()
-    return {"connected":bool(r.data),"updated_at":r.data[0]["updated_at"] if r.data else None}
+    if not r.data:
+        return {"connected":False,"healthy":False,"updated_at":None,"message":"Not connected"}
+    try:
+        await google_access_token(admin_email)
+        return {"connected":True,"healthy":True,"updated_at":r.data[0]["updated_at"],"message":"Connected"}
+    except HTTPException as exc:
+        return {"connected":False,"healthy":False,"updated_at":r.data[0]["updated_at"],"message":exc.detail,"needs_reconnect":True}
 
 def disconnect_google(admin_email: str):
     db().table("integration_tokens").delete().eq("provider","google_drive").eq("owner_email",admin_email).execute()
