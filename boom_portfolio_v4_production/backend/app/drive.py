@@ -1,6 +1,7 @@
 import re
 import io
 import time
+import asyncio
 from collections import OrderedDict
 import httpx
 from fastapi import HTTPException
@@ -12,6 +13,18 @@ API="https://www.googleapis.com/drive/v3"
 _MEDIA_CACHE=OrderedDict()
 _MEDIA_CACHE_TTL=60*60*3
 _MEDIA_CACHE_MAX=96
+
+async def _resilient_get(client, url, **kwargs):
+    """Retry transient Drive/CDN failures before surfacing an unavailable image."""
+    response=None
+    for attempt in range(3):
+        try:
+            response=await client.get(url,**kwargs)
+            if response.status_code not in (408,429,500,502,503,504):return response
+        except (httpx.TimeoutException,httpx.TransportError):
+            if attempt==2:raise
+        if attempt<2:await asyncio.sleep(.35*(2**attempt))
+    return response
 
 def _cache_get(key):
     item=_MEDIA_CACHE.get(key)
@@ -112,7 +125,7 @@ async def image_bytes(file_id: str, admin_email: str | None = None, allow_public
 
     async with httpx.AsyncClient(timeout=60,follow_redirects=True) as client:
         for auth in attempts:
-            r=await client.get(
+            r=await _resilient_get(client,
                 f"{API}/files/{file_id}",
                 params={**auth["params"],"alt":"media"},
                 headers=auth["headers"],
@@ -123,7 +136,7 @@ async def image_bytes(file_id: str, admin_email: str | None = None, allow_public
         if allow_public_fallback:
             # Works only for files shared as "Anyone with the link". Validate the media
             # type so an HTML permission page is never cached as an image.
-            r=await client.get(f"https://lh3.googleusercontent.com/d/{file_id}=w2400")
+            r=await _resilient_get(client,f"https://lh3.googleusercontent.com/d/{file_id}=w2400")
             if not r.is_error and r.headers.get("content-type","").lower().startswith("image/"):
                 return r.content,r.headers.get("content-type","image/jpeg")
 
