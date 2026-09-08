@@ -46,20 +46,37 @@ def _repo_images(root: Path, owner: str, repo: str, branch: str):
         if len(out)>=12: break
     return out
 
+def _clone_repo(normalized: str, dest: Path, token: str | None):
+    """Clone public repositories without credentials, then retry private ones."""
+    attempts=[None]
+    if token: attempts.append(token)
+    last_error=None
+    for credential in attempts:
+        shutil.rmtree(dest,ignore_errors=True)
+        cmd=["git"]
+        if credential:
+            cmd += ["-c",f"http.extraHeader=Authorization: Bearer {credential}"]
+        cmd += ["clone","--depth","1","--single-branch",normalized,str(dest)]
+        env={**os.environ,"GIT_TERMINAL_PROMPT":"0"}
+        try:
+            subprocess.run(cmd,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90,env=env)
+            return
+        except subprocess.TimeoutExpired:
+            raise HTTPException(408,"GitHub clone timeout กรุณาลองใหม่")
+        except subprocess.CalledProcessError as exc:
+            last_error=exc
+    detail="Clone repository ไม่สำเร็จ ตรวจสอบว่า URL ถูกต้องและ repository ยังเปิดใช้งานอยู่"
+    if token:
+        detail += " หากเป็น private repository ให้ตรวจสอบ GITHUB_TOKEN บน Render"
+    raise HTTPException(400,detail) from last_error
+
 def analyze_repo(repo_url: str):
     owner, repo, normalized = parse_repo_url(repo_url)
     if not shutil.which("git"): raise HTTPException(500, "git is not installed on backend")
     settings=get_settings()
     with tempfile.TemporaryDirectory(prefix="portfolio_repo_") as tmp:
         dest=Path(tmp)/"repo"
-        cmd=["git"]
-        if settings.github_token:
-            cmd += ["-c", f"http.extraHeader=Authorization: Bearer {settings.github_token}"]
-        cmd += ["clone","--depth","1","--single-branch",normalized,str(dest)]
-        try:
-            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
-        except subprocess.TimeoutExpired: raise HTTPException(408,"GitHub clone timeout")
-        except subprocess.CalledProcessError as e: raise HTTPException(400,"Clone repository ไม่สำเร็จ ตรวจสอบ URL/สิทธิ์ repository")
+        _clone_repo(normalized,dest,settings.github_token)
         size=sum(p.stat().st_size for p in dest.rglob("*") if p.is_file())
         if size > settings.max_github_repo_mb*1024*1024:
             raise HTTPException(413, f"Repository ใหญ่เกิน {settings.max_github_repo_mb} MB")
