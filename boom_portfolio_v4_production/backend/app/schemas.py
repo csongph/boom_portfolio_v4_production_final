@@ -38,6 +38,13 @@ class AlbumUpdate(BaseModel):
 
 class PhotoOrderIn(BaseModel): photo_ids: list[str]
 
+class PhotoMetadataItem(BaseModel):
+    id: str
+    alt_text: str = Field(min_length=1, max_length=300)
+
+class PhotoMetadataIn(BaseModel):
+    photos: list[PhotoMetadataItem] = Field(min_length=1, max_length=500)
+
 class VisitorIn(BaseModel):
     anonymous_visitor_id: str = Field(min_length=12, max_length=96)
 

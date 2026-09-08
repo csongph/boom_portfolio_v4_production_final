@@ -39,3 +39,5 @@ services:
         sync: false
       - key: INSTAGRAM_CACHE_TTL_SECONDS
         value: 10800
+      - key: REDIS_URL
+        sync: false

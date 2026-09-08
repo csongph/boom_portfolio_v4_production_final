@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     instagram_access_token: str = ""
     instagram_api_version: str = "v25.0"
     instagram_cache_ttl_seconds: int = 10800
+    redis_url: str = ""
     contact_rate_limit_per_10_min: int = 5
     max_github_repo_mb: int = 150
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

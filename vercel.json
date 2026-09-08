@@ -21,7 +21,11 @@
     },
     {
       "src": "/photography/([^/]+)",
-      "dest": "/boom_portfolio_v4_production/frontend/album.html?slug=$1"
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/photography/$1"
+    },
+    {
+      "src": "/projects/([^/]+)",
+      "dest": "https://boom-portfolio-v4-production-final.onrender.com/projects/$1"
     },
     {
       "src": "/share/photography/([^/]+)/([^/]+)",

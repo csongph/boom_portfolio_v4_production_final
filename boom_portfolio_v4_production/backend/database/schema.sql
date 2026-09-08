@@ -74,7 +74,41 @@ create index if not exists album_photos_album_idx on public.album_photos(album_i
 create index if not exists photo_likes_photo_idx on public.photo_likes(photo_id);
 create index if not exists photo_events_type_idx on public.photo_events(event_type,created_at desc);
 create index if not exists photo_events_photo_idx on public.photo_events(photo_id,event_type);
+create index if not exists albums_category_pub_idx on public.albums(category,is_published,created_at desc);
+create index if not exists photo_likes_created_idx on public.photo_likes(created_at desc);
+create index if not exists photo_events_created_idx on public.photo_events(created_at desc);
+create index if not exists photo_events_album_created_idx on public.photo_events(album_id,created_at desc);
 create index if not exists messages_idx on public.contact_messages(is_archived,is_read,created_at desc);
+
+create or replace function public.reorder_album_photos(p_album_id uuid,p_photo_ids uuid[])
+returns void language plpgsql set search_path=public as $$
+declare updated_count integer;
+begin
+  if cardinality(p_photo_ids) <> (select count(*) from public.album_photos where album_id=p_album_id) then raise exception 'Photo order must contain every album photo exactly once'; end if;
+  update public.album_photos p set sort_order=o.position-1
+  from unnest(p_photo_ids) with ordinality as o(photo_id,position)
+  where p.id=o.photo_id and p.album_id=p_album_id;
+  get diagnostics updated_count=row_count;
+  if updated_count <> cardinality(p_photo_ids) then raise exception 'Invalid or duplicate photo id'; end if;
+end;
+$$;
+
+create or replace function public.update_album_photo_metadata(p_album_id uuid,p_items jsonb)
+returns integer language plpgsql set search_path=public as $$
+declare updated_count integer;
+begin
+  update public.album_photos p set alt_text=left(trim(i.alt_text),300)
+  from jsonb_to_recordset(p_items) as i(id uuid,alt_text text)
+  where p.id=i.id and p.album_id=p_album_id and trim(coalesce(i.alt_text,''))<>'';
+  get diagnostics updated_count=row_count;
+  return updated_count;
+end;
+$$;
+
+create or replace function public.dashboard_counts()
+returns jsonb language sql stable set search_path=public as $$
+  select jsonb_build_object('projects',(select count(*) from public.projects),'published_projects',(select count(*) from public.projects where is_published),'albums',(select count(*) from public.albums),'photos',(select count(*) from public.album_photos),'published_albums',(select count(*) from public.albums where is_published));
+$$;
 
 alter table public.site_settings enable row level security;
 alter table public.projects enable row level security;

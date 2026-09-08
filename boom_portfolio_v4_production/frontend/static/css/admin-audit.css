@@ -1,0 +1,29 @@
+body.admin-body .photo-editor-card {
+  height: auto;
+  min-height: 250px;
+  display: grid;
+  grid-template-rows: 150px auto auto;
+  gap: 8px;
+  align-content: start;
+  padding-bottom: 10px;
+}
+body.admin-body .photo-editor-card img { height: 150px; }
+body.admin-body .photo-editor-card > span {
+  position: static;
+  background: transparent;
+  padding: 0 8px;
+  color: var(--text);
+  font-size: .72rem;
+}
+body.admin-body .photo-alt-editor {
+  display: grid;
+  gap: 5px;
+  padding: 0 8px;
+  font-size: .78rem;
+  color: var(--muted);
+}
+body.admin-body .photo-alt-editor .input {
+  min-height: 44px;
+  font-size: .86rem;
+  padding: 8px;
+}

@@ -1,15 +1,17 @@
-import copy, html, json, re, time
+import copy, hashlib, html, json, re, time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request, Query, BackgroundTasks
 from fastapi.responses import Response, RedirectResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
+try:from redis import Redis
+except ImportError:Redis=None
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from .database import db
 from .security import require_admin
 from .drive import folder_id_from, list_images, image_bytes, optimized_image_bytes, image_exif, folder_name, warm_cache
-from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn, AIContentIn, VisitorIn, PhotoEventIn, AlbumViewIn
+from .schemas import DriveImport, AlbumIn, AlbumUpdate, PhotoOrderIn, PhotoMetadataIn, ProjectIn, GitHubImportIn, SettingsIn, ContactIn, AIContentIn, VisitorIn, PhotoEventIn, AlbumViewIn
 from .config import get_settings
 from .github_import import analyze_repo
 from .integrations import google_auth_url, decode_state, google_exchange, save_google_token, google_status, disconnect_google
@@ -22,6 +24,19 @@ app.add_middleware(CORSMiddleware,allow_origins=s.cors_origin_list,allow_credent
 _rate=defaultdict(deque)
 _public_cache={}
 _PUBLIC_CACHE_TTL=300
+_redis_client=None
+_redis_checked=False
+
+def shared_cache():
+    global _redis_client,_redis_checked
+    if _redis_checked:return _redis_client
+    _redis_checked=True
+    if Redis and s.redis_url:
+        try:
+            client=Redis.from_url(s.redis_url,decode_responses=True,socket_connect_timeout=1,socket_timeout=1)
+            client.ping();_redis_client=client
+        except Exception:_redis_client=None
+    return _redis_client
 
 def retry_query(fn, attempts=3):
     last_error=None
@@ -33,6 +48,12 @@ def retry_query(fn, attempts=3):
     raise last_error
 
 def public_cache_get(key, allow_stale=False):
+    redis=shared_cache();redis_key="boom:public:"+hashlib.sha256(repr(key).encode()).hexdigest()
+    if redis:
+        try:
+            remote=json.loads(redis.get(redis_key) or "null")
+            if remote and (allow_stale or time.time()-remote["created"]<=_PUBLIC_CACHE_TTL):return remote["value"]
+        except Exception:pass
     item=_public_cache.get(key)
     if not item:return None
     created,value=item
@@ -41,9 +62,32 @@ def public_cache_get(key, allow_stale=False):
 
 def public_cache_set(key,value):
     _public_cache[key]=(time.time(),copy.deepcopy(value))
+    redis=shared_cache()
+    if redis:
+        try:
+            redis_key="boom:public:"+hashlib.sha256(repr(key).encode()).hexdigest()
+            redis.setex(redis_key,21600,json.dumps({"created":time.time(),"value":value},default=str))
+        except Exception:pass
     return value
+
+def invalidate_public_cache():
+    _public_cache.clear();redis=shared_cache()
+    if redis:
+        try:
+            keys=list(redis.scan_iter(match="boom:public:*",count=100))
+            if keys:redis.delete(*keys)
+        except Exception:pass
 def nowiso(): return datetime.now(timezone.utc).isoformat()
 def throttle(key: str, limit: int, seconds: int):
+    redis=shared_cache()
+    if redis:
+        try:
+            redis_key="boom:rate:"+hashlib.sha256(key.encode()).hexdigest();count=redis.incr(redis_key)
+            if count==1:redis.expire(redis_key,seconds)
+            if count>limit:raise HTTPException(429,"Too many requests")
+            return
+        except HTTPException:raise
+        except Exception:pass
     now=time.time(); dq=_rate[key]
     while dq and dq[0] < now-seconds:dq.popleft()
     if len(dq)>=limit: raise HTTPException(429,"Too many requests")
@@ -207,12 +251,16 @@ def require_published_image(file_id: str):
 async def security_headers(request,call_next):
     response=await call_next(request)
     if request.method!="GET" and request.url.path.startswith("/api/admin/albums") and response.status_code<400:
-        _public_cache.clear()
+        invalidate_public_cache()
     response.headers["X-Content-Type-Options"]="nosniff"
     response.headers["X-Frame-Options"]="DENY"
     response.headers["Referrer-Policy"]="strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"]="camera=(), microphone=(), geolocation=()"
-    if request.url.path.startswith("/api/"): response.headers["Cache-Control"]=response.headers.get("Cache-Control","no-store")
+    response.headers["Strict-Transport-Security"]="max-age=63072000; includeSubDomains; preload"
+    response.headers["Content-Security-Policy-Report-Only"]="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self' https://*.supabase.co"
+    if request.method=="GET" and request.url.path in ("/api/albums","/api/projects","/api/photography/featured"):
+        response.headers["Cache-Control"]="public,max-age=60,stale-while-revalidate=300"
+    elif request.url.path.startswith("/api/"):response.headers["Cache-Control"]=response.headers.get("Cache-Control","no-store")
     return response
 
 @app.get("/api/health")
@@ -234,6 +282,40 @@ def go_instagram():
         raise HTTPException(400,"Invalid Instagram URL")
     return RedirectResponse(url,status_code=302)
 
+def absolute_public_url(value:str|None,base:str)->str|None:
+    if not value:return None
+    return value if re.match(r"^https?://",value,re.I) else base+"/"+value.lstrip("/")
+
+def seo_document(*,title:str,description:str,canonical:str,image_url:str|None,body:str,schema:dict):
+    safe=lambda value:html.escape(str(value or ""),quote=True)
+    image_meta=f'<meta property="og:image" content="{safe(image_url)}"><meta name="twitter:image" content="{safe(image_url)}">' if image_url else ""
+    schema_json=json.dumps(schema,ensure_ascii=False,separators=(",",":")).replace("</","<\\/")
+    page=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>{safe(title)}</title><meta name="description" content="{safe(description)}"><link rel="canonical" href="{safe(canonical)}">
+<meta property="og:type" content="article"><meta property="og:title" content="{safe(title)}"><meta property="og:description" content="{safe(description)}"><meta property="og:url" content="{safe(canonical)}">{image_meta}<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#120806"><link rel="icon" href="/static/img/boom-profile.jpg"><link rel="stylesheet" href="/static/css/style.css?v=54"><script type="application/ld+json">{schema_json}</script></head><body>{body}<script src="/static/js/site.js?v=57"></script></body></html>'''
+    return Response(page,media_type="text/html; charset=utf-8",headers={"Cache-Control":"public,max-age=300,stale-while-revalidate=3600"})
+
+@app.get("/photography/{slug}",response_class=Response)
+def photography_page(slug:str):
+    album=one("albums","slug",slug,True);base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
+    canonical=f"{base}/photography/{album['slug']}";title=f"{album.get('seo_title') or album.get('title') or 'Photography'} — BOOM"
+    description=album.get("seo_description") or album.get("description") or "Photography album by BOOM."
+    image=absolute_public_url(f"/api/drive/image/{album['cover_drive_file_id']}" if album.get("cover_drive_file_id") else None,base)
+    schema={"@context":"https://schema.org","@type":"ImageGallery","name":album.get("title"),"description":description,"url":canonical,"image":image,"creator":{"@type":"Person","name":"BOOM","sameAs":"https://www.instagram.com/cs.photo_byboom/"}}
+    body='<header class="container nav"><a class="brand" href="/" data-name>BOOM</a><button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button><nav class="nav-links"><a href="/">Home</a><a href="/work.html">Coding</a><a href="/photography.html">Photography</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></nav></header><main id="albumDetail" class="container section"></main><div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer"><button id="lightboxClose" aria-label="Close image">Close ×</button><button class="lightbox-nav prev" id="lightboxPrev" aria-label="Previous image">←</button><img id="lightboxImage" alt=""><button class="lightbox-nav next" id="lightboxNext" aria-label="Next image">→</button></div><footer class="footer"><div class="container footer-inner"><strong data-name>BOOM</strong><span data-headline>Developer & Photographer</span></div></footer>'
+    return seo_document(title=title,description=description,canonical=canonical,image_url=image,body=body,schema=schema)
+
+@app.get("/projects/{slug}",response_class=Response)
+def project_page(slug:str):
+    item=one("projects","slug",slug,True);base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
+    canonical=f"{base}/projects/{item['slug']}";title=f"{item.get('seo_title') or item.get('title') or 'Project'} — BOOM"
+    description=item.get("seo_description") or item.get("summary") or item.get("description") or "Developer project by BOOM."
+    image=absolute_public_url(item.get("cover_url"),base)
+    schema={"@context":"https://schema.org","@type":"CreativeWork","name":item.get("title"),"description":description,"url":canonical,"image":image,"author":{"@type":"Person","name":"BOOM"},"keywords":item.get("tech_stack") or []}
+    body='<header class="container nav"><a class="brand" href="/" data-name>BOOM</a><button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button><nav class="nav-links"><a href="/">Home</a><a href="/work.html">Coding</a><a href="/photography.html">Photography</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></nav></header><main id="projectDetail" class="container section"></main><footer class="footer"><div class="container footer-inner"><strong data-name>BOOM</strong><span data-headline>Developer & Photographer</span></div></footer>'
+    return seo_document(title=title,description=description,canonical=canonical,image_url=image,body=body,schema=schema)
+
 @app.get("/share/photography/{slug}/{photo_id}", response_class=Response)
 def share_photography_handoff(slug: str, photo_id: str):
     album=one("albums","slug",slug,True)
@@ -241,7 +323,7 @@ def share_photography_handoff(slug: str, photo_id: str):
     if str(photo.get("album_id")) != str(album.get("id")) or str(photo_album_row.get("id")) != str(album.get("id")):
         raise HTTPException(404,"Photo not found")
     base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
-    photo_url=f"{base}/album.html?slug={slug}&photo={photo_id}"
+    photo_url=f"{base}/photography/{slug}?photo={photo_id}"
     image_url=f"{base}/api/drive/image/{photo['drive_file_id']}"
     title=f"{album.get('title') or 'Photography'} — CS.BOOM Photography"
     desc=album.get("seo_description") or album.get("description") or "View this photo and the full album on CS.BOOM Photography."
@@ -253,8 +335,7 @@ def share_photography_handoff(slug: str, photo_id: str):
 <meta property="og:type" content="article"><meta property="og:title" content="{safe(title)}">
 <meta property="og:description" content="{safe(desc)}"><meta property="og:url" content="{safe(photo_url)}">
 <meta property="og:image" content="{safe(image_url)}"><meta name="twitter:card" content="summary_large_image">
-<meta http-equiv="refresh" content="0; url={safe(photo_url)}">
-<script>location.replace({json.dumps(photo_url)});</script></head>
+<meta http-equiv="refresh" content="0; url={safe(photo_url)}"></head>
 <body><p><a href="{safe(photo_url)}">Open photo</a></p></body></html>"""
     return Response(body,media_type="text/html; charset=utf-8",headers={"Cache-Control":"public,max-age=300"})
 
@@ -285,12 +366,18 @@ def albums(category:str|None=None):
             return q.execute().data or []
         rows=retry_query(load_albums)
         ids=[a["id"] for a in rows]
-        photos=retry_query(lambda:db().table("album_photos").select("id,album_id").in_("album_id",ids).eq("is_hidden",False).execute().data or []) if ids else []
+        photos=retry_query(lambda:db().table("album_photos").select("id,album_id,drive_file_id,file_name,alt_text,width,height,sort_order").in_("album_id",ids).eq("is_hidden",False).order("sort_order").execute().data or []) if ids else []
         counts=defaultdict(int)
-        for photo in photos:counts[str(photo.get("album_id"))]+=1
+        previews=defaultdict(list)
+        for photo in photos:
+            album_id=str(photo.get("album_id"));counts[album_id]+=1
+            if len(previews[album_id])<4:
+                photo["image_url"]=f"/api/drive/image/{photo['drive_file_id']}"
+                previews[album_id].append(photo)
         for a in rows:
             a["cover_url"]=f"/api/drive/image/{a['cover_drive_file_id']}" if a.get("cover_drive_file_id") else None
             a["photo_count"]=counts[str(a["id"])]
+            a["preview_photos"]=previews[str(a["id"])]
         return public_cache_set(cache_key,rows)
     except Exception:
         stale=public_cache_get(cache_key,allow_stale=True)
@@ -451,8 +538,8 @@ def contact(payload:ContactIn,request:Request):
 def sitemap():
     base=(settings().get("site_url") or s.frontend_public_url).rstrip("/")
     urls=[base,base+"/work",base+"/photography",base+"/about",base+"/contact"]
-    urls += [f"{base}/project?slug={p['slug']}" for p in projects()]
-    urls += [f"{base}/album?slug={a['slug']}" for a in albums()]
+    urls += [f"{base}/projects/{p['slug']}" for p in projects()]
+    urls += [f"{base}/photography/{a['slug']}" for a in albums()]
     xml='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{u}</loc></url>' for u in urls)+'</urlset>'
     return Response(xml,media_type="application/xml")
 
@@ -466,13 +553,19 @@ async def me(admin=Depends(require_admin)):return admin
 
 @app.get("/api/admin/dashboard")
 async def dashboard(admin=Depends(require_admin)):
-    d=db();return {"projects":len(d.table("projects").select("id").execute().data or []),"published_projects":len(d.table("projects").select("id").eq("is_published",True).execute().data or []),"albums":len(d.table("albums").select("id").execute().data or []),"photos":len(d.table("album_photos").select("id").execute().data or []),"published_albums":len(d.table("albums").select("id").eq("is_published",True).execute().data or [])}
+    d=db()
+    try:
+        result=d.rpc("dashboard_counts",{}).execute().data
+        if isinstance(result,dict):return result
+    except Exception:pass
+    return {"projects":len(d.table("projects").select("id").execute().data or []),"published_projects":len(d.table("projects").select("id").eq("is_published",True).execute().data or []),"albums":len(d.table("albums").select("id").execute().data or []),"photos":len(d.table("album_photos").select("id").execute().data or []),"published_albums":len(d.table("albums").select("id").eq("is_published",True).execute().data or [])}
 
 @app.get("/api/admin/photography/analytics")
-async def photo_analytics(admin=Depends(require_admin)):
-    try: events=db().table("photo_events").select("event_type,photo_id,album_id").execute().data or []
+async def photo_analytics(days:int=Query(90,ge=1,le=365),admin=Depends(require_admin)):
+    since=datetime.fromtimestamp(time.time()-days*86400,tz=timezone.utc).isoformat()
+    try: events=db().table("photo_events").select("event_type,photo_id,album_id").gte("created_at",since).limit(10000).execute().data or []
     except Exception: events=[]
-    try: likes=db().table("photo_likes").select("photo_id").execute().data or []
+    try: likes=db().table("photo_likes").select("photo_id").gte("created_at",since).limit(10000).execute().data or []
     except Exception: likes=[]
     photos=db().table("album_photos").select("id,file_name,album_id,drive_file_id").execute().data or []
     albums=db().table("albums").select("id,title").execute().data or []
@@ -510,7 +603,7 @@ async def photo_analytics(admin=Depends(require_admin)):
     most_liked=[photo_row(pid,"likes") for pid in sorted(counts,key=lambda x:counts[x].get("likes",0),reverse=True)[:8]]
     most_downloaded=[photo_row(pid,"downloads") for pid in sorted(counts,key=lambda x:counts[x].get("downloads",0),reverse=True)[:8]]
     album_rows=[{"album_id":aid,"title":amap.get(aid,{}).get("title") or aid,**vals} for aid,vals in album_counts.items()]
-    return {"totals":totals,"most_liked":most_liked,"most_downloaded":most_downloaded,"albums":album_rows}
+    return {"period_days":days,"totals":totals,"most_liked":most_liked,"most_downloaded":most_downloaded,"albums":album_rows}
 
 @app.get("/api/admin/projects")
 async def admin_projects(admin=Depends(require_admin)):return db().table("projects").select("*").order("sort_order").order("created_at",desc=True).execute().data or []
@@ -589,7 +682,7 @@ async def create_album(payload:AlbumIn,background_tasks:BackgroundTasks,admin=De
     data={"title":payload.title,"slug":unique_slug("albums",payload.slug or payload.title),"description":payload.description,"category":payload.category,"event_date":payload.event_date.isoformat() if payload.event_date else None,"cover_drive_file_id":cover,"drive_folder_id":payload.drive_folder_id,"drive_folder_url":payload.drive_folder_url,"is_published":payload.is_published,"allow_downloads":payload.allow_downloads,"allow_sharing":payload.allow_sharing,"show_likes":payload.show_likes,"download_quality":payload.download_quality,"seo_title":payload.seo_title,"seo_description":payload.seo_description,"updated_at":nowiso()}
     try:ar=db().table("albums").insert(data).execute()
     except Exception:raise HTTPException(409,"Album slug ซ้ำหรือข้อมูลไม่ถูกต้อง")
-    a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":p["name"],"sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)})
+    a=ar.data[0];rows=[{"album_id":a["id"],"drive_file_id":p["id"],"file_name":p["name"],"mime_type":p["mime_type"],"width":p.get("width"),"height":p.get("height"),"alt_text":f"{payload.title} photograph {i+1}","sort_order":i} for i,p in enumerate(selected)];db().table("album_photos").insert(rows).execute();audit(admin["email"],"album.create","album",a["id"],{"photos":len(rows)})
     # Pre-render+cache the widths the public gallery will request, so the first
     # real visitor doesn't pay for a cold Drive fetch + resize on every photo.
     background_tasks.add_task(warm_cache,[p["id"] for p in selected],admin["email"])
@@ -601,12 +694,35 @@ async def update_album(album_id:str,payload:AlbumUpdate,admin=Depends(require_ad
 
 @app.put("/api/admin/albums/{album_id}/order")
 async def reorder_album(album_id:str,payload:PhotoOrderIn,admin=Depends(require_admin)):
-    for i,pid in enumerate(payload.photo_ids):db().table("album_photos").update({"sort_order":i}).eq("id",pid).eq("album_id",album_id).execute()
+    current=db().table("album_photos").select("id").eq("album_id",album_id).execute().data or []
+    current_ids={str(row["id"]) for row in current}
+    if len(payload.photo_ids)!=len(set(payload.photo_ids)) or set(payload.photo_ids)!=current_ids:
+        raise HTTPException(400,"Photo order must contain every album photo exactly once")
+    try:
+        db().rpc("reorder_album_photos",{"p_album_id":album_id,"p_photo_ids":payload.photo_ids}).execute()
+    except Exception:
+        # Compatibility fallback until the bundled migration has been applied.
+        for i,pid in enumerate(payload.photo_ids):db().table("album_photos").update({"sort_order":i}).eq("id",pid).eq("album_id",album_id).execute()
     audit(admin["email"],"album.reorder","album",album_id);return {"message":"ordered"}
+
+@app.put("/api/admin/albums/{album_id}/photos")
+async def update_photo_metadata(album_id:str,payload:PhotoMetadataIn,admin=Depends(require_admin)):
+    current=db().table("album_photos").select("id").eq("album_id",album_id).execute().data or []
+    allowed={str(row["id"]) for row in current};requested={item.id for item in payload.photos}
+    if not requested.issubset(allowed):raise HTTPException(400,"Photo does not belong to this album")
+    try:
+        db().rpc("update_album_photo_metadata",{"p_album_id":album_id,"p_items":[item.model_dump() for item in payload.photos]}).execute()
+    except Exception:
+        for item in payload.photos:db().table("album_photos").update({"alt_text":item.alt_text.strip()}).eq("id",item.id).eq("album_id",album_id).execute()
+    audit(admin["email"],"album.photos.update","album",album_id,{"photos":len(payload.photos)})
+    return {"message":"photo metadata updated","updated":len(payload.photos)}
 
 @app.delete("/api/admin/albums/{album_id}")
 async def delete_album(album_id:str,admin=Depends(require_admin)):
-    db().table("albums").delete().eq("id",album_id).execute();audit(admin["email"],"album.delete","album",album_id);return {"message":"deleted"}
+    try:r=db().table("albums").delete().eq("id",album_id).execute()
+    except Exception:raise HTTPException(409,"ลบอัลบั้มไม่ได้ กรุณารัน database migration ล่าสุดเพื่อตั้งค่า cascade")
+    if not r.data:raise HTTPException(404,"Album not found")
+    audit(admin["email"],"album.delete","album",album_id);return {"message":"deleted"}
 
 @app.get("/api/admin/messages")
 async def messages(admin=Depends(require_admin)):return db().table("contact_messages").select("*").eq("is_archived",False).order("created_at",desc=True).execute().data or []
