@@ -1,249 +1,47 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07090E">
-  <meta name="description" content="CS PHOTO BY BOOM — Bangkok photographer for portraits, events and fashion.">
-  <link rel="canonical" href="https://boom-portfolio-v4-production-final.vercel.app/wallet">
-  <meta property="og:title" content="CS PHOTO BY BOOM">
-  <meta property="og:description" content="Photography Portfolio — Portrait, Event & Fashion">
-  <meta property="og:type" content="profile">
-  <meta property="og:url" content="https://boom-portfolio-v4-production-final.vercel.app/wallet">
-  <meta property="og:image" content="https://boom-portfolio-v4-production-final.vercel.app/static/img/boom-profile.jpg">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="CS PHOTO BY BOOM">
-  <meta name="twitter:description" content="Photography Portfolio — Portrait, Event & Fashion">
-  <meta name="twitter:image" content="https://boom-portfolio-v4-production-final.vercel.app/static/img/boom-profile.jpg">
-  <link rel="icon" href="/static/img/boom-profile.jpg">
-  <link rel="preload" as="image" href="/static/img/boom-profile.jpg" fetchpriority="high">
-  <title>CS PHOTO BY BOOM — Digital Business Card</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=54">
-  <style>
-    body.wallet-page{min-width:320px;overflow-x:hidden;background:var(--bg);color:var(--text)}
-    .wallet-wrap{width:min(100% - 28px,1080px);margin-inline:auto}
-    .wallet-hero{position:relative;isolation:isolate;display:flex;align-items:center;min-height:min(100svh,760px);padding:max(18px,env(safe-area-inset-top)) 0 max(24px,env(safe-area-inset-bottom));overflow:hidden}
-    .wallet-hero::before{content:"";position:absolute;z-index:-2;inset:-20%;background:radial-gradient(circle at 28% 20%,rgba(99,102,241,.26),transparent 35%),radial-gradient(circle at 82% 78%,rgba(168,85,247,.16),transparent 34%)}
-    .wallet-hero::after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(7,9,14,.05),rgba(7,9,14,.74) 85%,var(--bg))}
-    .business-card{position:relative;width:min(100%,760px);margin-inline:auto;padding:clamp(20px,4vw,34px);border:1px solid var(--border);border-radius:var(--radius-xl);background:linear-gradient(145deg,rgba(20,27,44,.92),rgba(10,13,22,.9));box-shadow:var(--shadow-lg);backdrop-filter:blur(18px);overflow:hidden}
-    .business-card::after{content:"";position:absolute;right:-80px;top:-110px;width:260px;height:260px;border-radius:50%;background:var(--grad);opacity:.14;filter:blur(24px);pointer-events:none}
-    .identity{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
-    .profile-ring{width:92px;height:92px;flex:0 0 92px;padding:3px;border-radius:28px;background:var(--grad);box-shadow:0 10px 30px rgba(99,102,241,.22)}
-    .profile-ring img{display:block;width:100%;height:100%;object-fit:cover;border:3px solid #0d1220;border-radius:25px;background:var(--surface2)}
-    .identity-copy{min-width:0}.identity-kicker{margin:0 0 5px;color:#a5b4fc;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
-    .identity h1{margin:0;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,8vw,56px);font-weight:600;line-height:.92;letter-spacing:-.03em}
-    .role-line{margin:12px 0 0;color:var(--text2);font-size:clamp(13px,3.5vw,16px);font-weight:600;line-height:1.45}.location-line{display:flex;align-items:center;gap:7px;margin:7px 0 0;color:var(--text3);font-size:13px}.location-line svg{width:15px;height:15px;flex:none}
-    .primary-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px;position:relative;z-index:1}
-    .wallet-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:50px;padding:0 16px;border:1px solid transparent;border-radius:14px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;transition:transform .2s var(--ease),border-color .2s,background .2s,box-shadow .2s}
-    .wallet-btn:hover{transform:translateY(-1px)}.wallet-btn:active{transform:translateY(0)}
-    .wallet-btn.primary{background:var(--grad);color:#fff;box-shadow:var(--shadow-glow)}.wallet-btn.secondary{border-color:var(--border);background:rgba(255,255,255,.045);color:var(--text)}
-    .wallet-btn svg{width:18px;height:18px;flex:none}
-    .utility-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;position:relative;z-index:1}
-    .utility-actions .wallet-btn{min-height:46px;background:transparent;border-color:var(--border);color:var(--text2);font-size:13px;font-weight:700}
-    .social-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;min-height:44px;position:relative;z-index:1}
-    .social-link{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 13px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.025);color:var(--text2);font-size:12px;font-weight:700;text-decoration:none;transition:.2s var(--ease)}
-    .social-link:hover{border-color:rgba(129,140,248,.45);background:rgba(99,102,241,.08);color:var(--text)}.social-link svg{width:17px;height:17px}
-    .wallet-btn:focus-visible,.social-link:focus-visible,.qr-close:focus-visible,.work-card:focus-visible{outline:3px solid #818cf8;outline-offset:3px}
-    .wallet-section{padding:clamp(52px,8vw,88px) 0;border-top:1px solid var(--border)}
-    .section-copy{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}.section-copy h2{margin:5px 0 0;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,7vw,52px);font-weight:600;line-height:.95}.section-copy p{max-width:440px;margin:0;color:var(--text2);font-size:14px;line-height:1.7}.wallet-eyebrow{color:#a5b4fc;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
-    .selected-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.work-card{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;border:1px solid var(--border);border-radius:18px;background:var(--surface);color:#fff;text-decoration:none}.work-card img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--ease),filter .35s}.work-card::after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.74))}.work-card:hover img{transform:scale(1.025);filter:saturate(1.05)}.work-label{position:absolute;z-index:2;left:13px;right:13px;bottom:12px;display:grid;gap:2px}.work-label span{color:#c7d2fe;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.work-label strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.work-skeleton{min-height:280px;border-radius:18px;background:linear-gradient(90deg,var(--surface),var(--surface2),var(--surface));background-size:200% 100%;animation:wallet-shimmer 1.3s linear infinite}@keyframes wallet-shimmer{to{background-position:-200% 0}}
-    .view-all{display:flex;justify-content:center;margin-top:22px}.view-all .wallet-btn{min-width:180px}
-    .about-card{display:grid;grid-template-columns:.75fr 1.25fr;gap:30px;align-items:start}.about-card h2{margin:5px 0 0;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,7vw,52px);font-weight:600;line-height:.95}.about-text{margin:0;color:var(--text2);font-size:15px;line-height:1.75}.about-text strong{color:var(--text)}.about-sub{display:block;margin-top:8px;color:var(--text3);font-size:13px}
-    .wallet-footer{padding:26px 0 max(30px,env(safe-area-inset-bottom));border-top:1px solid var(--border);color:var(--text3);font-size:12px}.wallet-footer-inner{display:flex;justify-content:space-between;gap:16px;align-items:center}.wallet-footer strong{color:var(--text2)}
-    .wallet-modal[hidden]{display:none}.wallet-modal{position:fixed;z-index:2000;inset:0;display:grid;align-items:end;justify-items:center}.modal-scrim{position:absolute;inset:0;background:rgba(2,4,10,.76);backdrop-filter:blur(8px)}.qr-sheet{position:relative;width:min(100%,460px);padding:24px 20px max(24px,calc(20px + env(safe-area-inset-bottom)));border:1px solid var(--border);border-bottom:0;border-radius:26px 26px 0 0;background:var(--surface);box-shadow:0 -24px 80px rgba(0,0,0,.45);text-align:center}.qr-close{position:absolute;right:14px;top:14px;width:44px;height:44px;border:1px solid var(--border);border-radius:50%;background:rgba(255,255,255,.04);color:var(--text);font-size:25px;cursor:pointer}.qr-sheet h2{margin:4px 52px 5px;font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;font-weight:600}.qr-sheet p{margin:0;color:var(--text2);font-size:13px}.qr-frame{display:grid;place-items:center;width:272px;max-width:100%;min-height:272px;margin:20px auto 12px;padding:15px;border-radius:22px;background:#fff}.qr-frame canvas,.qr-frame img{display:block;max-width:100%;height:auto}.qr-url{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text3);font-size:11px}.toast{position:fixed;z-index:2200;left:50%;bottom:max(24px,calc(16px + env(safe-area-inset-bottom)));transform:translate(-50%,18px);padding:11px 16px;border:1px solid var(--border);border-radius:999px;background:#111827;color:#fff;box-shadow:var(--shadow-md);font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.24s var(--ease)}.toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:700px){.wallet-wrap{width:min(100% - 22px,1080px)}.wallet-hero{min-height:auto;padding-top:max(14px,env(safe-area-inset-top));padding-bottom:26px}.business-card{padding:20px;border-radius:26px}.identity{align-items:flex-start}.profile-ring{width:82px;height:82px;flex-basis:82px;border-radius:24px}.profile-ring img{border-radius:21px}.identity h1{font-size:clamp(31px,9vw,43px)}.role-line{margin-top:10px;font-size:13px}.primary-actions{grid-template-columns:1fr;margin-top:20px}.primary-actions .wallet-btn{min-height:48px}.utility-actions{grid-template-columns:1fr 1fr}.social-row{margin-top:14px}.section-copy{align-items:flex-start;flex-direction:column;gap:10px}.selected-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.work-card{border-radius:14px}.work-label{left:10px;right:10px;bottom:9px}.work-skeleton{min-height:210px}.about-card{grid-template-columns:1fr;gap:14px}.wallet-footer-inner{align-items:flex-start;flex-direction:column}.wallet-section{padding:50px 0}.qr-sheet{width:100%}}
-    @media(max-width:380px){.business-card{padding:17px}.identity{gap:12px}.profile-ring{width:72px;height:72px;flex-basis:72px}.identity h1{font-size:30px}.utility-actions{grid-template-columns:1fr}.selected-grid{grid-template-columns:1fr 1fr}}
-    @media(prefers-reduced-motion:reduce){.wallet-btn,.social-link,.work-card img,.toast{transition:none!important}.work-skeleton{animation:none}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07090E">
+<meta name="description" content="CS PHOTO BY BOOM — Bangkok photographer for portraits, events and fashion.">
+<link rel="canonical" href="https://boom-portfolio-v4-production-final.vercel.app/wallet">
+<meta property="og:title" content="CS PHOTO BY BOOM">
+<meta property="og:description" content="Photography Portfolio — Portrait, Event & Fashion">
+<meta property="og:image" content="https://boom-portfolio-v4-production-final.vercel.app/static/img/boom-profile.jpg">
+<title>CS PHOTO BY BOOM — Digital Business Card</title>
+<link rel="stylesheet" href="/static/css/style.css?v=54">
+<style>
+body{min-width:320px;overflow-x:hidden;background:var(--bg);color:var(--text)}.wrap{width:min(100% - 28px,1080px);margin:auto}.hero{display:flex;align-items:center;min-height:min(100svh,760px);padding:max(16px,env(safe-area-inset-top)) 0 28px;background:radial-gradient(circle at 25% 10%,rgba(99,102,241,.25),transparent 38%),radial-gradient(circle at 85% 80%,rgba(168,85,247,.15),transparent 38%)}.card{width:min(100%,760px);margin:auto;padding:clamp(20px,4vw,34px);border:1px solid var(--border);border-radius:var(--radius-xl);background:linear-gradient(145deg,rgba(20,27,44,.94),rgba(10,13,22,.92));box-shadow:var(--shadow-lg)}.id{display:flex;gap:16px;align-items:center}.avatar{width:92px;height:92px;flex:0 0 92px;padding:3px;border-radius:28px;background:var(--grad)}.avatar img{width:100%;height:100%;object-fit:cover;border:3px solid #0d1220;border-radius:25px}.kicker{color:#a5b4fc;font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.card h1{margin:4px 0 0;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,8vw,56px);line-height:.92}.role{margin:12px 0 0;color:var(--text2);font-size:14px;font-weight:700}.loc{margin:7px 0 0;color:var(--text3);font-size:13px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.btnx{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 16px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.045);color:var(--text);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer}.btnx.primary{border:0;background:var(--grad);color:#fff;box-shadow:var(--shadow-glow)}.btnx:focus-visible,.social a:focus-visible{outline:3px solid #818cf8;outline-offset:3px}.secondary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.secondary .btnx{min-height:46px;color:var(--text2);font-size:13px}.social{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.social a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--border);border-radius:999px;color:var(--text2);font-size:12px;font-weight:700;text-decoration:none}.section{padding:64px 0;border-top:1px solid var(--border)}.head{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:22px}.head h2,.about h2{margin:4px 0 0;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,7vw,52px);line-height:.95}.head p,.about p{margin:0;color:var(--text2);font-size:14px;line-height:1.7}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.work{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:18px;background:var(--surface)}.work img{width:100%;height:100%;object-fit:cover}.work span{position:absolute;left:12px;right:12px;bottom:10px;padding-top:40px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:12px;font-weight:700}.about{display:grid;grid-template-columns:.8fr 1.2fr;gap:30px}.footer{padding:26px 0 36px;border-top:1px solid var(--border);color:var(--text3);font-size:12px}.modal[hidden]{display:none}.modal{position:fixed;z-index:9999;inset:0;display:grid;place-items:end center;background:rgba(0,0,0,.72)}.sheet{position:relative;width:min(100%,460px);padding:24px 20px 30px;border-radius:26px 26px 0 0;background:var(--surface);text-align:center}.close{position:absolute;right:14px;top:14px;width:44px;height:44px;border:1px solid var(--border);border-radius:50%;background:transparent;color:#fff;font-size:25px}.qr{display:grid;place-items:center;width:272px;min-height:272px;margin:20px auto 10px;padding:15px;border-radius:22px;background:#fff}.toast{position:fixed;z-index:10000;left:50%;bottom:24px;transform:translate(-50%,14px);padding:11px 16px;border-radius:999px;background:#111827;color:#fff;opacity:0;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:700px){.wrap{width:min(100% - 22px,1080px)}.hero{min-height:auto;padding-top:max(14px,env(safe-area-inset-top))}.card{padding:20px;border-radius:26px}.avatar{width:82px;height:82px;flex-basis:82px}.actions{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.head{align-items:flex-start;flex-direction:column;gap:10px}.about{grid-template-columns:1fr;gap:14px}.section{padding:50px 0}}@media(max-width:380px){.id{gap:12px}.avatar{width:72px;height:72px;flex-basis:72px}.secondary{grid-template-columns:1fr}}
+</style>
 </head>
-<body class="wallet-page">
-  <main>
-    <section class="wallet-hero" aria-labelledby="cardTitle">
-      <div class="wallet-wrap">
-        <article class="business-card" aria-label="Digital business card for CS PHOTO BY BOOM">
-          <div class="identity">
-            <div class="profile-ring">
-              <img src="/static/img/boom-profile.jpg" width="180" height="180" loading="eager" fetchpriority="high" decoding="async" alt="BOOM, photographer behind CS PHOTO BY BOOM">
-            </div>
-            <div class="identity-copy">
-              <p class="identity-kicker">Digital Business Card</p>
-              <h1 id="cardTitle">CS PHOTO BY BOOM</h1>
-              <p class="role-line">Photographer · Portrait · Event · Fashion</p>
-              <p class="location-line" aria-label="Location: Bangkok, Thailand">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-                Bangkok, Thailand
-              </p>
-            </div>
-          </div>
-
-          <div class="primary-actions">
-            <a class="wallet-btn primary" href="/photography.html" aria-label="View photography portfolio">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 19"/></svg>
-              View Portfolio
-            </a>
-            <button class="wallet-btn secondary" id="shareCard" type="button" aria-label="Share my digital business card">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4M8.6 13.4l6.8 4"/></svg>
-              <span id="shareLabel">Share My Card</span>
-            </button>
-          </div>
-
-          <div class="utility-actions">
-            <button class="wallet-btn" id="saveContact" type="button" aria-label="Save Boom to contacts">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
-              Save Contact
-            </button>
-            <button class="wallet-btn" id="showQr" type="button" aria-label="Show QR code for this digital business card">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/></svg>
-              Show QR
-            </button>
-          </div>
-
-          <nav class="social-row" id="socialLinks" aria-label="Social links">
-            <a class="social-link" href="/go/instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-              Instagram
-            </a>
-          </nav>
-        </article>
-      </div>
-    </section>
-
-    <section class="wallet-section" aria-labelledby="selectedTitle">
-      <div class="wallet-wrap">
-        <div class="section-copy">
-          <div>
-            <div class="wallet-eyebrow">Selected Work</div>
-            <h2 id="selectedTitle">Photography, selected.</h2>
-          </div>
-          <p>Selected photography across portrait, fashion and events.</p>
-        </div>
-        <div class="selected-grid" id="selectedGrid" aria-live="polite">
-          <div class="work-skeleton" aria-hidden="true"></div><div class="work-skeleton" aria-hidden="true"></div><div class="work-skeleton" aria-hidden="true"></div>
-        </div>
-        <div class="view-all"><a class="wallet-btn secondary" href="/photography.html">View All Work</a></div>
-      </div>
-    </section>
-
-    <section class="wallet-section" aria-labelledby="aboutTitle">
-      <div class="wallet-wrap about-card">
-        <div><div class="wallet-eyebrow">About</div><h2 id="aboutTitle">BOOM</h2></div>
-        <p class="about-text"><strong>Photographer based in Bangkok, focused on portraits, events and fashion.</strong><span class="about-sub">Also a developer — with photography taking the lead here.</span></p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="wallet-footer">
-    <div class="wallet-wrap wallet-footer-inner"><strong>CS PHOTO BY BOOM</strong><span>Portrait · Event · Fashion · Bangkok</span></div>
-  </footer>
-
-  <div class="wallet-modal" id="qrModal" hidden aria-hidden="true">
-    <div class="modal-scrim" data-close-qr></div>
-    <section class="qr-sheet" role="dialog" aria-modal="true" aria-labelledby="qrTitle" tabindex="-1">
-      <button class="qr-close" id="qrClose" type="button" aria-label="Close QR code">×</button>
-      <div class="wallet-eyebrow">Share</div>
-      <h2 id="qrTitle">Scan to open my portfolio</h2>
-      <p>Point your phone camera at the QR code.</p>
-      <div class="qr-frame" id="qrCode" aria-label="QR code for CS PHOTO BY BOOM digital business card"></div>
-      <span class="qr-url">boom-portfolio-v4-production-final.vercel.app/wallet</span>
-    </section>
-  </div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+<body>
+<main>
+<section class="hero"><div class="wrap"><article class="card">
+<div class="id"><div class="avatar"><img src="/static/img/boom-profile.jpg" width="180" height="180" loading="eager" fetchpriority="high" alt="BOOM, photographer behind CS PHOTO BY BOOM"></div><div><div class="kicker">Digital Business Card</div><h1>CS PHOTO BY BOOM</h1><p class="role">Photographer · Portrait · Event · Fashion</p><p class="loc">Bangkok, Thailand</p></div></div>
+<div class="actions"><a class="btnx primary" href="/photography.html">View Portfolio</a><button class="btnx" id="shareCard" type="button"><span id="shareLabel">Share My Card</span></button></div>
+<div class="secondary"><a class="btnx" id="saveContact" href="/boom-cs-photo.vcf" download="boom-cs-photo.vcf" type="text/vcard" aria-label="Save Boom contact card">Save Contact</a><button class="btnx" id="showQr" type="button">Show QR</button></div>
+<nav class="social" id="socialLinks" aria-label="Social links"><a href="/go/instagram" target="_blank" rel="noopener noreferrer">Instagram</a></nav>
+</article></div></section>
+<section class="section"><div class="wrap"><div class="head"><div><div class="kicker">Selected Work</div><h2>Photography, selected.</h2></div><p>Selected photography across portrait, fashion and events.</p></div><div class="grid" id="selectedGrid"></div><div style="display:flex;justify-content:center;margin-top:22px"><a class="btnx" href="/photography.html">View All Work</a></div></div></section>
+<section class="section"><div class="wrap about"><div><div class="kicker">About</div><h2>BOOM</h2></div><p><strong style="color:var(--text)">Photographer based in Bangkok, focused on portraits, events and fashion.</strong><br><span style="color:var(--text3)">Also a developer — with photography taking the lead here.</span></p></div></section>
+</main>
+<footer class="footer"><div class="wrap">CS PHOTO BY BOOM · Portrait · Event · Fashion · Bangkok</div></footer>
+<div class="modal" id="qrModal" hidden><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="qrTitle"><button class="close" id="qrClose" aria-label="Close QR">×</button><div class="kicker">Share</div><h2 id="qrTitle">Scan to open my portfolio</h2><p style="color:var(--text2)">Point your phone camera at the QR code.</p><div class="qr" id="qrCode"></div></section></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-(() => {
-  'use strict';
-  const CARD_URL='https://boom-portfolio-v4-production-final.vercel.app/wallet';
-  const SITE_URL='https://boom-portfolio-v4-production-final.vercel.app/';
-  const SHARE_TITLE='CS PHOTO BY BOOM';
-  const SHARE_TEXT='Photography Portfolio — Portrait, Event & Fashion';
-  const blocked=/ค่ายโสต|สมาคม|งานปู่|ร้อยวันปู่|รูปงานปู่|funeral|memorial/i;
-  const $=s=>document.querySelector(s);
-  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const shareButton=$('#shareCard'),shareLabel=$('#shareLabel'),toast=$('#toast'),socialLinks=$('#socialLinks'),selectedGrid=$('#selectedGrid');
-  const qrModal=$('#qrModal'),qrSheet=qrModal.querySelector('.qr-sheet'),qrCode=$('#qrCode'),qrClose=$('#qrClose');
-  let settings=null,lastFocus=null,qrReady=false,toastTimer=null;
-
-  function showToast(message){
-    toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);
-  }
-  async function copyLink(){
-    try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(CARD_URL)}else{throw new Error('clipboard unavailable')}}
-    catch{const area=document.createElement('textarea');area.value=CARD_URL;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}
-    showToast('Link copied');
-  }
-  async function shareCard(){
-    if(navigator.share){
-      try{await navigator.share({title:SHARE_TITLE,text:SHARE_TEXT,url:CARD_URL});return}catch(err){if(err&&err.name==='AbortError')return}
-    }
-    await copyLink();
-  }
-  if(!navigator.share)shareLabel.textContent='Copy Link';
-  shareButton.addEventListener('click',shareCard);
-
-  function safeHttpUrl(value){
-    if(!value)return'';try{const u=new URL(value,location.origin);return /^https?:$/.test(u.protocol)?u.href:''}catch{return''}
-  }
-  function icon(name){
-    if(name==='Instagram')return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>';
-    if(name==='Facebook')return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5H17V3.9c-.8-.1-1.5-.2-2.3-.2-2.3 0-3.9 1.4-3.9 4V10H8v3h2.8v8h2.9Z"/></svg>';
-    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1 1.6 1 .9 1.6 2.4 1.1 2.9.9.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5A3.9 3.9 0 0 1 6.8 8.5c-.1-.3-.5-1.3.1-2.8 0 0 .9-.3 2.9 1.1a10 10 0 0 1 5.3 0C17.1 5.4 18 5.7 18 5.7c.6 1.5.2 2.5.1 2.8a3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7 1 .7 2V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>';
-  }
-  function renderSocials(s={}){
-    const links=[['Instagram',safeHttpUrl(s.instagram_url)||'/go/instagram'],['Facebook',safeHttpUrl(s.facebook_url)],['GitHub',safeHttpUrl(s.github_url)]].filter(([,u])=>u);
-    socialLinks.innerHTML=links.map(([name,url])=>`<a class="social-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(name)}">${icon(name)}${esc(name)}</a>`).join('');
-  }
-  async function getSettings(){
-    if(settings)return settings;
-    try{const r=await fetch('/api/settings',{headers:{Accept:'application/json'}});if(r.ok)settings=await r.json()}catch{}
-    settings=settings||{};renderSocials(settings);return settings;
-  }
-
-  function vcardEscape(value=''){return String(value).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;')}
-  async function saveContact(){
-    const s=await getSettings();
-    const lines=['BEGIN:VCARD','VERSION:3.0','FN:Boom','N:;Boom;;;','ORG:CS PHOTO BY BOOM',`URL:${SITE_URL}`];
-    const ig=safeHttpUrl(s.instagram_url),fb=safeHttpUrl(s.facebook_url),gh=safeHttpUrl(s.github_url);
-    if(s.email)lines.push(`EMAIL;TYPE=INTERNET:${vcardEscape(s.email)}`);
-    if(s.phone)lines.push(`TEL;TYPE=CELL:${vcardEscape(s.phone)}`);
-    if(ig)lines.push(`X-SOCIALPROFILE;TYPE=instagram:${ig}`);
-    if(fb)lines.push(`X-SOCIALPROFILE;TYPE=facebook:${fb}`);
-    if(gh)lines.push(`X-SOCIALPROFILE;TYPE=github:${gh}`);
-    lines.push('END:VCARD');
-    const blob=new Blob([lines.join('\r\n')],{type:'text/vcard;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download='boom-cs-photo.vcf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);showToast('Contact card ready');
-  }
-  $('#saveContact').addEventListener('click',saveContact);
-
-  function loadQrLibrary(){
-    if(window.QRCode)return Promise.resolve();
-    return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';script.async=true;script.onload=resolve;script.onerror=reject;document.head.appendChild(script)});
-  }
-  async function buildQr(){
-    if(qrReady)return;qrCode.innerHTML='';
-    try{await loadQrLibrary();new QRCode(qrCode,{text:CARD_URL,width:240,height:240,colorDark:'#07090E',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
-    catch{const img=new Image();img.width=240;img.height=240;img.alt='QR code for CS PHOTO BY BOOM';img.src='https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data='+encodeURIComponent(CARD_URL);qrCode.appendChild(img)}
-    qrReady=true;
-  }
-  async function openQr(){lastFocus=document.activeElement;qrModal.hidden=false;qrModal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';await buildQr();qrClose.focus()}
-  function closeQr(){qrModal.hidden=true;qrModal.setAttribute('aria-hidden','true');document.body.style.overflow='';if(lastFocus&&lastFocus.focus)lastFocus.focus()}
-  $('#showQr').addEventListener('click',openQr);qrClose.addEventListener('click',closeQr);qrModal.querySelector('[data-close-qr]').addEventListener('click',closeQr);
-  qrModal.addEventListener('keydown',e=>{if(e.key==='Escape')closeQr();if(e.key==='Tab'){const focusable=[...qrSheet.querySelectorAll('button,a[href],[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled);if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
-
-  function imageUrl(url,width=760){
-    try{const u=new URL(url,location.origin);if(u.origin===location.origin){u.searchParams.set('w',String(width));u.searchParams.set('q','82');return u.pathname+u.search}return u.href}catch{return url||''}
-  }
-  function category(value=''){const v=String(value).toLowerCase();if(v.includes('fashion'))return'Fashion';if(v.includes('portrait'))return'Portrait';if(v.includes('event'))return'Event';if(v.includes('studio'))return'Studio';if(v.includes('graduat'))return'Graduation';return value||'Photography'}
-  function uniquePhotos(rows=[]){const seen=new Set();return rows.filter(p=>{const key=p.id||p.drive_file_id||p.image_url;if(!key||seen.has(key)||blocked.test(p.album_title||''))return false;seen.add(key);return true}).slice(0,6)}
-  function renderWork(rows){
-    if(!rows.length){selectedGrid.innerHTML='<p style="grid-column:1/-1;color:var(--text2);margin:0">Selected work is available in the full photography portfolio.</p>';return}
-    selectedGrid.innerHTML=rows.map(p=>{const href=p.album_slug?`/photography/${encodeURIComponent(p.album_slug)}${p.id?`?photo=${encodeURIComponent(p.id)}`:''}`:'/photography.html';return `<a class="work-card" href="${href}" aria-label="View ${esc(p.album_title||'selected photography')}"><img src="${esc(imageUrl(p.image_url))}" loading="lazy" decoding="async" alt="${esc(p.alt_text||p.file_name||p.album_title||'Photography by BOOM')}"${p.width&&p.height?` width="${Number(p.width)}" height="${Number(p.height)}"`:''}><span class="work-label"><span>${esc(category(p.category))}</span><strong>${esc(p.album_title||'Selected Work')}</strong></span></a>`}).join('');
-  }
-  async function loadSelectedWork(){
-    try{const r=await fetch('/api/photography/featured?limit=6',{headers:{Accept:'application/json'}});if(!r.ok)throw new Error();const rows=uniquePhotos(await r.json());renderWork(rows)}catch{selectedGrid.innerHTML='<p style="grid-column:1/-1;color:var(--text2);margin:0">Selected work is available in the full photography portfolio.</p>'}
-  }
-
-  getSettings();loadSelectedWork();
+(()=>{'use strict';
+const CARD='https://boom-portfolio-v4-production-final.vercel.app/wallet',TITLE='CS PHOTO BY BOOM',TEXT='Photography Portfolio — Portrait, Event & Fashion',blocked=/ค่ายโสต|สมาคม|งานปู่|ร้อยวันปู่|รูปงานปู่|funeral|memorial/i,$=s=>document.querySelector(s);let settings={};
+const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1600)};
+async function copy(){try{await navigator.clipboard.writeText(CARD)}catch{const t=document.createElement('textarea');t.value=CARD;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}toast('Link copied')}
+$('#shareCard').onclick=async()=>{if(navigator.share){try{await navigator.share({title:TITLE,text:TEXT,url:CARD});return}catch(e){if(e.name==='AbortError')return}}copy()};if(!navigator.share)$('#shareLabel').textContent='Copy Link';
+async function loadSettings(){try{const r=await fetch('/api/settings');if(r.ok)settings=await r.json()}catch{}const links=[['Instagram',settings.instagram_url||'/go/instagram'],['Facebook',settings.facebook_url],['GitHub',settings.github_url]].filter(x=>x[1]);$('#socialLinks').innerHTML=links.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${n}</a>`).join('')}
+$('#saveContact').addEventListener('click',()=>setTimeout(()=>toast('Open with Contacts to save'),250));
+async function qr(){if($('#qrCode').childNodes.length)return;await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)}).then(()=>new QRCode($('#qrCode'),{text:CARD,width:240,height:240,colorDark:'#07090E',colorLight:'#fff'})).catch(()=>{$('#qrCode').innerHTML=`<img width="240" height="240" alt="QR code" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(CARD)}">`})}
+$('#showQr').onclick=async()=>{$('#qrModal').hidden=false;document.body.style.overflow='hidden';await qr();$('#qrClose').focus()};const close=()=>{$('#qrModal').hidden=true;document.body.style.overflow=''};$('#qrClose').onclick=close;$('#qrModal').onclick=e=>{if(e.target===$('#qrModal'))close()};addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+function img(u,w=760){try{const x=new URL(u,location.origin);if(x.origin===location.origin){x.searchParams.set('w',w);x.searchParams.set('q','82');return x.pathname+x.search}return x.href}catch{return u}}
+async function work(){try{const r=await fetch('/api/photography/featured?limit=6');const rows=(await r.json()).filter(p=>!blocked.test(p.album_title||'')).slice(0,6);$('#selectedGrid').innerHTML=rows.map(p=>`<a class="work" href="/photography/${encodeURIComponent(p.album_slug||'')}${p.id?'?photo='+encodeURIComponent(p.id):''}"><img src="${img(p.image_url)}" loading="lazy" decoding="async" alt="${p.alt_text||p.album_title||'Photography by BOOM'}"><span>${p.album_title||'Selected Work'}</span></a>`).join('')}catch{$('#selectedGrid').innerHTML='<p style="color:var(--text2)">View selected work in the full portfolio.</p>'}}
+loadSettings();work();
 })();
 </script>
-</body>
-</html>
+</body></html>
