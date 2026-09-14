@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, model_validator
 
 class DriveImport(BaseModel): folder_url: str
 
@@ -21,6 +21,13 @@ class AlbumIn(BaseModel):
     seo_title: str | None = None
     seo_description: str | None = None
 
+    @model_validator(mode="after")
+    def force_public_album_features(self):
+        self.allow_downloads = True
+        self.allow_sharing = True
+        self.show_likes = True
+        return self
+
 class AlbumUpdate(BaseModel):
     title: str
     slug: str | None = None
@@ -35,6 +42,13 @@ class AlbumUpdate(BaseModel):
     download_quality: str = Field(default="high", pattern="^(web|high|original)$")
     seo_title: str | None = None
     seo_description: str | None = None
+
+    @model_validator(mode="after")
+    def force_public_album_features(self):
+        self.allow_downloads = True
+        self.allow_sharing = True
+        self.show_likes = True
+        return self
 
 class PhotoOrderIn(BaseModel): photo_ids: list[str]
 
