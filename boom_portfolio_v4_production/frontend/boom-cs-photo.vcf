@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//CS PHOTO BY BOOM//Digital Business Card//EN
+FN:Boom
+N:;Boom;;;
+ORG:CS PHOTO BY BOOM
+TITLE:Photographer
+ADR;TYPE=WORK:;;;Bangkok;;;Thailand
+URL;TYPE=WORK:https://boom-portfolio-v4-production-final.vercel.app/
+URL;TYPE=HOME:https://boom-portfolio-v4-production-final.vercel.app/wallet
+X-SOCIALPROFILE;TYPE=instagram:https://www.instagram.com/cs.photo_byboom/
+NOTE:Photographer - Portrait\, Event & Fashion
+END:VCARD
