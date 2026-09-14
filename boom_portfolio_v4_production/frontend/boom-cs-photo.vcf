@@ -9,5 +9,10 @@ ADR;TYPE=WORK:;;;Bangkok;;;Thailand
 URL;TYPE=WORK:https://boom-portfolio-v4-production-final.vercel.app/
 URL;TYPE=HOME:https://boom-portfolio-v4-production-final.vercel.app/wallet
 X-SOCIALPROFILE;TYPE=instagram:https://www.instagram.com/cs.bxxm/
+X-SOCIALPROFILE;TYPE=instagram:https://www.instagram.com/cs.photo_byboom/
+item1.URL:https://www.instagram.com/cs.bxxm/
+item1.X-ABLabel:Instagram Main
+item2.URL:https://www.instagram.com/cs.photo_byboom/
+item2.X-ABLabel:Instagram Photography
 NOTE:Photographer - Portrait\, Event & Fashion
 END:VCARD
