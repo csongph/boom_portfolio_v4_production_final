@@ -33,7 +33,7 @@
 <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer"><button class="close" aria-label="Close">×</button><img alt=""></div>
 <script>
 const blocked=/ค่ายโสต|สมาคม|งานปู่|ร้อยวันปู่|รูปงานปู่|funeral|memorial/i;
-const MAX_SELECTED=30,PER_ALBUM=5;
+const MAX_SELECTED=48,PER_ALBUM=8;
 const gallery=document.querySelector('#gallery'),chips=document.querySelector('#chips'),hero=document.querySelector('#heroImage'),meta=document.querySelector('#portfolioMeta');
 const lightbox=document.querySelector('#lightbox'),lightboxImg=lightbox.querySelector('img');let selected=[];
 const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
