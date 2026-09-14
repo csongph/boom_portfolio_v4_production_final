@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta name="description" content="Selected photography by BOOM — fashion, portrait, event, studio and visual storytelling.">
+  <meta property="og:title" content="CS PHOTO BY BOOM — Selected Portfolio">
+  <meta property="og:description" content="A compact selection of BOOM's photography work.">
+  <meta property="og:image" content="/static/images/cs-boom-portfolio-cover.webp">
+  <title>CS PHOTO BY BOOM — Selected Portfolio</title>
+  <style>
+    :root{--bg:#0b0b0b;--card:#141414;--text:#f5f2eb;--muted:#aaa59c;--line:#2a2927;--soft:#1c1b19;--accent:#f5f2eb}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button{font:inherit}
+    .wrap{width:min(100% - 32px,1080px);margin:auto}.top{position:absolute;z-index:5;left:0;right:0;top:0;padding:20px 0}.nav{display:flex;align-items:center;justify-content:space-between}.brand{font-weight:800;letter-spacing:.13em;font-size:13px}.mini{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#d9d4ca}
+    .hero{position:relative;min-height:88svh;display:flex;align-items:flex-end;overflow:hidden;background:#111}.hero-media{position:absolute;inset:0}.hero-media img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.94)}.hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.24) 0%,rgba(0,0,0,.06) 36%,rgba(0,0,0,.78) 100%)}
+    .hero-content{position:relative;z-index:2;padding:120px 0 48px;width:100%}.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#ded8cc;margin-bottom:12px}.hero h1{margin:0;max-width:760px;font-size:clamp(43px,10vw,92px);line-height:.9;letter-spacing:-.055em}.hero p{max-width:540px;margin:20px 0 0;color:#e2ded7;font-size:15px;line-height:1.6}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:#f5f2eb;color:#111;font-weight:700;font-size:13px}.btn.alt{background:rgba(15,15,15,.45);color:#fff;backdrop-filter:blur(12px)}
+    .section{padding:72px 0}.intro{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:end;margin-bottom:28px}.intro h2{font-size:clamp(31px,6vw,58px);letter-spacing:-.04em;line-height:.95;margin:0}.intro p{margin:0;color:var(--muted);line-height:1.7;font-size:14px}.chips{display:flex;gap:8px;overflow:auto;padding:3px 0 20px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chip{white-space:nowrap;border:1px solid var(--line);background:transparent;color:#d8d3ca;border-radius:999px;padding:9px 13px;font-size:12px}.chip.active{background:var(--text);color:#111;border-color:var(--text)}
+    .grid{columns:3 260px;column-gap:12px}.shot{position:relative;break-inside:avoid;margin:0 0 12px;border-radius:16px;overflow:hidden;background:var(--soft);cursor:pointer}.shot img{display:block;width:100%;height:auto;min-height:220px;object-fit:cover;transition:transform .45s ease,opacity .25s ease}.shot:hover img{transform:scale(1.018)}.shot-info{position:absolute;left:0;right:0;bottom:0;padding:44px 14px 13px;background:linear-gradient(transparent,rgba(0,0,0,.72));display:flex;align-items:end;justify-content:space-between;gap:8px;opacity:0;transition:.2s}.shot:hover .shot-info{opacity:1}.shot-cat{font-size:10px;text-transform:uppercase;letter-spacing:.13em}.shot-title{font-size:11px;color:#e2ddd4;text-align:right;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .empty{padding:50px 20px;border:1px solid var(--line);border-radius:18px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:18px;margin-bottom:8px}.loader{height:42vh;border-radius:18px;background:linear-gradient(90deg,#121212,#1c1c1c,#121212);background-size:200% 100%;animation:shimmer 1.4s infinite}@keyframes shimmer{to{background-position:-200% 0}}
+    .about{border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:36px}.about h2{font-size:clamp(34px,7vw,64px);line-height:.95;letter-spacing:-.05em;margin:0}.about-copy{color:var(--muted);line-height:1.75;font-size:14px}.about-copy strong{color:var(--text)}.contact-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}.contact-row .btn{background:transparent;color:var(--text)}
+    footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:11px}.foot{display:flex;justify-content:space-between;gap:18px}.lightbox{position:fixed;z-index:50;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:20px}.lightbox.open{display:flex}.lightbox img{max-width:100%;max-height:88svh;object-fit:contain}.close{position:absolute;right:17px;top:17px;width:42px;height:42px;border:1px solid #444;border-radius:50%;background:#141414;color:white;font-size:24px}
+    @media(max-width:700px){.wrap{width:min(100% - 24px,1080px)}.top{padding-top:16px}.hero{min-height:82svh}.hero-content{padding-bottom:32px}.hero p{font-size:14px}.section{padding:54px 0}.intro{grid-template-columns:1fr;gap:16px}.grid{columns:2 145px;column-gap:8px}.shot{margin-bottom:8px;border-radius:12px}.shot-info{opacity:1;padding:36px 10px 9px}.shot-title{display:none}.about{grid-template-columns:1fr;gap:22px}.foot{flex-direction:column}.btn{min-height:44px}.mini{font-size:9px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+  <header class="top"><div class="wrap nav"><a class="brand" href="/">CS PHOTO BY BOOM</a><span class="mini">Selected Works</span></div></header>
+  <section class="hero">
+    <div class="hero-media"><img id="heroImage" src="/static/images/cs-boom-portfolio-cover.webp" alt="Selected photography by BOOM"></div>
+    <div class="hero-content"><div class="wrap"><div class="eyebrow">Photographer · Bangkok, Thailand</div><h1>Moments<br>with intent.</h1><p>Portrait, fashion, event and visual storytelling — a compact selection made for a quick introduction to my photography.</p><div class="hero-actions"><a class="btn" href="#work">View selected work</a><a class="btn alt" href="/go/instagram" target="_blank" rel="noopener">Instagram ↗</a></div></div></div>
+  </section>
+
+  <main>
+    <section id="work" class="section"><div class="wrap"><div class="intro"><div><div class="eyebrow">Selected Portfolio</div><h2>Different stories.<br>One visual voice.</h2></div><p>Curated from published work to show range without repeating the same kind of frame. Private family work, association photos and the audiovisual-camp set are intentionally excluded.</p></div><div id="chips" class="chips" aria-label="Portfolio filters"></div><div id="gallery"><div class="loader"></div></div></div></section>
+
+    <section class="section"><div class="wrap about"><div><div class="eyebrow">About</div><h2>CS PHOTO<br>BY BOOM</h2></div><div class="about-copy"><strong>BOOM — photographer & developer.</strong><br>I focus on people, atmosphere and decisive moments, balancing clean portraits with energetic event coverage and fashion work.<div class="contact-row"><a class="btn" href="/photography.html">Full portfolio</a><a class="btn" href="/go/instagram" target="_blank" rel="noopener">Instagram</a><a class="btn" href="/contact.html">Contact</a></div></div></div></section>
+  </main>
+
+  <footer><div class="wrap foot"><span>© CS PHOTO BY BOOM</span><span>Portrait · Fashion · Event · Selected Work</span></div></footer>
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer"><button class="close" aria-label="Close">×</button><img alt=""></div>
+
+  <script>
+    const blocked=/ค่ายโสต|สมาคม|งานปู่|ร้อยวันปู่|รูปงานปู่|funeral|memorial/i;
+    const gallery=document.querySelector('#gallery'),chips=document.querySelector('#chips'),hero=document.querySelector('#heroImage');
+    const lightbox=document.querySelector('#lightbox'),lightboxImg=lightbox.querySelector('img');
+    let selected=[];
+    const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const category=v=>{v=String(v||'').toLowerCase();if(v.includes('fashion')||v.includes('editorial'))return'Fashion';if(v.includes('portrait'))return'Portrait';if(v.includes('event'))return'Event';if(v.includes('studio'))return'Studio';if(v.includes('graduat'))return'Graduation';if(v.includes('selected'))return'Selected Work';return'Other'};
+    const imgUrl=(u,w=1100)=>{try{const x=new URL(u,location.origin);x.searchParams.set('w',w);x.searchParams.set('q','84');return x.pathname+x.search}catch{return u}};
+    function unique(items){const seen=new Set();return items.filter(p=>{const k=p.id||p.image_url;if(!k||seen.has(k))return false;seen.add(k);return true})}
+    function pickDiverse(items,limit=12){const order=['Fashion','Portrait','Event','Studio','Graduation','Selected Work','Other'],out=[],used=new Set();for(const c of order){const p=items.find(x=>category(x.category)===c&&!used.has(x.id||x.image_url));if(p){out.push(p);used.add(p.id||p.image_url)}}for(const p of items){const k=p.id||p.image_url;if(out.length>=limit)break;if(!used.has(k)){out.push(p);used.add(k)}}return out.slice(0,limit)}
+    function render(filter='All'){
+      const list=filter==='All'?selected:selected.filter(p=>category(p.category)===filter);
+      if(!list.length){gallery.innerHTML='<div class="empty"><strong>No photos in this filter yet.</strong>Open the full portfolio to see every published album.</div>';return}
+      gallery.innerHTML='<div class="grid">'+list.map((p,i)=>`<figure class="shot" data-i="${selected.indexOf(p)}"><img src="${esc(imgUrl(p.image_url,i<2?1400:900))}" loading="${i<2?'eager':'lazy'}" decoding="async" alt="${esc(p.alt_text||p.album_title||'Photography by BOOM')}"><figcaption class="shot-info"><span class="shot-cat">${esc(category(p.category))}</span><span class="shot-title">${esc(p.album_title||'Selected Work')}</span></figcaption></figure>`).join('')+'</div>';
+      gallery.querySelectorAll('.shot').forEach(el=>el.onclick=()=>openPhoto(selected[Number(el.dataset.i)]));
+    }
+    function makeChips(){const cats=['All',...new Set(selected.map(p=>category(p.category)))];chips.innerHTML=cats.map((c,i)=>`<button class="chip ${i===0?'active':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');chips.onclick=e=>{const b=e.target.closest('button');if(!b)return;chips.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));render(b.dataset.c)}}
+    function openPhoto(p){if(!p)return;lightboxImg.src=imgUrl(p.image_url,1800);lightboxImg.alt=p.alt_text||p.album_title||'Photography by BOOM';lightbox.classList.add('open');document.body.style.overflow='hidden'}
+    function closePhoto(){lightbox.classList.remove('open');document.body.style.overflow='';lightboxImg.src=''}
+    lightbox.querySelector('.close').onclick=closePhoto;lightbox.onclick=e=>{if(e.target===lightbox)closePhoto()};addEventListener('keydown',e=>{if(e.key==='Escape')closePhoto()});
+    async function load(){
+      try{
+        const [fr,ar]=await Promise.all([fetch('/api/photography/featured?limit=12'),fetch('/api/albums')]);
+        const featured=fr.ok?await fr.json():[],albums=ar.ok?await ar.json():[];
+        const allowedAlbums=(albums||[]).filter(a=>!blocked.test(`${a.title||''} ${a.description||''}`));
+        const albumBySlug=new Map(allowedAlbums.map(a=>[a.slug,a]));
+        const featuredAllowed=(featured||[]).filter(p=>!blocked.test(`${p.album_title||''}`)).map(p=>({...p,category:p.category||albumBySlug.get(p.album_slug)?.category||'Other'}));
+        const previews=[];
+        for(const a of allowedAlbums){for(const p of (a.preview_photos||[])){previews.push({...p,image_url:p.image_url||a.cover_url,album_title:a.title,album_slug:a.slug,category:a.category||'Other'})}}
+        selected=pickDiverse(unique([...featuredAllowed,...previews]),12);
+        if(!selected.length)throw new Error('No published photos');
+        hero.src=imgUrl(selected[0].image_url,1600);hero.alt=selected[0].alt_text||'Selected photography by BOOM';makeChips();render();
+      }catch(err){
+        gallery.innerHTML='<div class="empty"><strong>Selected work is temporarily unavailable.</strong><a class="btn" style="margin-top:16px" href="/photography.html">Open full photography portfolio</a></div>';chips.innerHTML='';
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
