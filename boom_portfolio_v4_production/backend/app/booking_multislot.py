@@ -86,6 +86,11 @@ def _slot_links(booking_id: str):
             or []
         )
     except Exception as exc:
+        # Status/email rendering should not take the whole booking system down
+        # while migration 0003 is still propagating. Legacy hydration can still
+        # resolve the primary availability_id.
+        if legacy._missing_multi_slot_table(exc):
+            return []
         _migration_error(exc)
 
 
@@ -101,12 +106,14 @@ def _reserved_links():
             or []
         )
     except Exception as exc:
+        if legacy._missing_multi_slot_table(exc):
+            return []
         _migration_error(exc)
 
 
 def _set_reserved(booking_id: str, reserved: bool):
     try:
-        return (
+        rows = (
             db()
             .table("booking_slots")
             .update({"is_reserved": reserved})
@@ -115,7 +122,13 @@ def _set_reserved(booking_id: str, reserved: bool):
             .data
             or []
         )
+        return rows
     except Exception as exc:
+        if legacy._missing_multi_slot_table(exc):
+            # A pre-migration single-slot booking is already protected by the
+            # active bookings table, so releasing/restoring does not need to
+            # break admin/customer status flows.
+            return []
         if reserved:
             raise HTTPException(409, "มีบางช่วงเวลาถูกจองไปแล้ว กรุณาเลือกเวลาใหม่")
         _migration_error(exc)
@@ -192,7 +205,12 @@ def public_availability(days: int = Query(90, ge=1, le=180)):
     end = start + timedelta(days=days)
     templates = {str(row["id"]): row for row in legacy._templates(True)}
     rows = legacy._availability_rows(start, end, True)
-    active = {str(row["availability_id"]) for row in _reserved_links()}
+
+    # This helper gracefully falls back to active legacy bookings when the
+    # booking_slots table is not available yet. The public booking page should
+    # never become completely unusable just because migration 0003 is pending.
+    active = set(legacy._active_slot_owners().keys())
+
     grouped = {}
     for row in rows:
         if str(row["id"]) in active:
@@ -249,21 +267,10 @@ async def create_booking(payload: MultiBookingRequestIn, request: Request):
     )
     ids = [str(row["id"]) for row in availability]
 
-    try:
-        conflict = (
-            db()
-            .table("booking_slots")
-            .select("availability_id")
-            .in_("availability_id", ids)
-            .eq("is_reserved", True)
-            .limit(1)
-            .execute()
-            .data
-            or []
-        )
-    except Exception as exc:
-        _migration_error(exc)
-    if conflict:
+    # Use the resilient owner map for the first conflict check. It works both
+    # before and after migration 0003.
+    active_owners = legacy._active_slot_owners()
+    if any(availability_id in active_owners for availability_id in ids):
         raise HTTPException(409, "มีบางช่วงเวลาถูกจองไปแล้ว กรุณาเลือกเวลาใหม่")
 
     manage_token = secrets.token_urlsafe(32)
@@ -296,13 +303,24 @@ async def create_booking(payload: MultiBookingRequestIn, request: Request):
                 for availability_id in ids
             ]
         ).execute()
-    except Exception:
-        try:
-            db().table("booking_slots").delete().eq("booking_id", item["id"]).execute()
-            db().table("bookings").delete().eq("id", item["id"]).execute()
-        except Exception:
+    except Exception as exc:
+        if legacy._missing_multi_slot_table(exc) and len(ids) == 1:
+            # Keep one-slot bookings working while migration 0003 is pending.
+            # The legacy availability_id remains protected by the active
+            # booking row and _active_slot_owners().
             pass
-        raise HTTPException(409, "มีบางช่วงเวลาถูกจองไปแล้ว กรุณาเลือกเวลาใหม่")
+        else:
+            try:
+                db().table("booking_slots").delete().eq("booking_id", item["id"]).execute()
+            except Exception:
+                pass
+            try:
+                db().table("bookings").delete().eq("id", item["id"]).execute()
+            except Exception:
+                pass
+            if legacy._missing_multi_slot_table(exc):
+                _migration_error(exc)
+            raise HTTPException(409, "มีบางช่วงเวลาถูกจองไปแล้ว กรุณาเลือกเวลาใหม่")
 
     admin_mail, customer_mail = await legacy._notify_new_booking(item, manage_token)
     return {
@@ -346,11 +364,11 @@ async def admin_availability(days: int = Query(120, ge=30, le=365), admin=Depend
     end = start + timedelta(days=days)
     templates = legacy._templates(False)
     rows = legacy._availability_rows(start, end, False)
-    active_bookings = {str(row["id"]): row for row in legacy._bookings(True)}
-    slot_to_booking = {
-        str(link["availability_id"]): active_bookings.get(str(link["booking_id"]))
-        for link in _reserved_links()
-    }
+
+    # Same resilient mapping as the public page; admin availability should
+    # remain usable while migration 0003 is being applied.
+    slot_to_booking = legacy._active_slot_owners()
+
     grouped = {}
     for row in rows:
         grouped.setdefault(str(row["work_date"]), {})[str(row["slot_template_id"])] = {
