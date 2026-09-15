@@ -22,13 +22,13 @@ function closeMobileNavOnNavigate(){
     document.querySelector('.nav-links')?.classList.remove('open');
     const btn=document.querySelector('.menu-btn');
     if(btn)btn.setAttribute('aria-expanded','false');
-  });
+  },{passive:true});
 }
 function init(){
   purgeBooking();markActiveNav();closeMobileNavOnNavigate();
-  const observer=new MutationObserver(()=>purgeBooking());
-  observer.observe(document.body,{childList:true,subtree:true});
-  setTimeout(()=>observer.disconnect(),8000);
+  // A few cheap passes cover asynchronously rendered contact settings without
+  // observing every gallery mutation for several seconds.
+  [250,1200,3500,8000].forEach(ms=>setTimeout(purgeBooking,ms));
   document.documentElement.dataset.ui='ready';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
