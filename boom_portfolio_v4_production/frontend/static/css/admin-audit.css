@@ -1,29 +1,8 @@
-body.admin-body .photo-editor-card {
-  height: auto;
-  min-height: 250px;
-  display: grid;
-  grid-template-rows: 150px auto auto;
-  gap: 8px;
-  align-content: start;
-  padding-bottom: 10px;
-}
-body.admin-body .photo-editor-card img { height: 150px; }
-body.admin-body .photo-editor-card > span {
-  position: static;
-  background: transparent;
-  padding: 0 8px;
-  color: var(--text);
-  font-size: .72rem;
-}
-body.admin-body .photo-alt-editor {
-  display: grid;
-  gap: 5px;
-  padding: 0 8px;
-  font-size: .78rem;
-  color: var(--muted);
-}
-body.admin-body .photo-alt-editor .input {
-  min-height: 44px;
-  font-size: .86rem;
-  padding: 8px;
-}
+@import url('/static/css/system.css?v=1');
+/* Admin now follows the same dark editorial system as the public site. */
+.sidebar a[href*="admin-booking"],
+.admin-main .panel:has(a[href*="/admin-booking"]),
+.field:has(input[name="booking_url"]),
+.check-grid span:nth-child(4),
+.check-grid span:nth-child(5){display:none!important}
+.admin-body .sidebar{padding-top:24px}.admin-body .sidebar>a:first-of-type{color:#d7b46a}.admin-body .status{border-color:#292d35}.admin-body .row,.admin-body .table-row{border-color:#292d35!important;background:#111318!important;border-radius:12px!important}.admin-body .panel-subtle{border-color:#292d35!important;background:#0c0e12!important}.admin-body .drive-photo{border-color:#292d35!important;background:#0d0f13!important}.admin-body button,.admin-body input,.admin-body textarea,.admin-body select{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}

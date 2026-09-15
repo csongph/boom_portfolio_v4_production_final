@@ -1,7 +1,10 @@
 from datetime import date
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
-class DriveImport(BaseModel): folder_url: str
+
+class DriveImport(BaseModel):
+    folder_url: str
+
 
 class AlbumIn(BaseModel):
     title: str = Field(min_length=1, max_length=160)
@@ -28,6 +31,7 @@ class AlbumIn(BaseModel):
         self.show_likes = True
         return self
 
+
 class AlbumUpdate(BaseModel):
     title: str
     slug: str | None = None
@@ -50,23 +54,31 @@ class AlbumUpdate(BaseModel):
         self.show_likes = True
         return self
 
-class PhotoOrderIn(BaseModel): photo_ids: list[str]
+
+class PhotoOrderIn(BaseModel):
+    photo_ids: list[str]
+
 
 class PhotoMetadataItem(BaseModel):
     id: str
     alt_text: str = Field(min_length=1, max_length=300)
 
+
 class PhotoMetadataIn(BaseModel):
     photos: list[PhotoMetadataItem] = Field(min_length=1, max_length=500)
+
 
 class VisitorIn(BaseModel):
     anonymous_visitor_id: str = Field(min_length=12, max_length=96)
 
+
 class PhotoEventIn(VisitorIn):
     event_type: str = Field(pattern="^(photo_view|download|share)$")
 
+
 class AlbumViewIn(VisitorIn):
     album_id: str
+
 
 class ProjectIn(BaseModel):
     title: str
@@ -92,14 +104,22 @@ class ProjectIn(BaseModel):
     seo_title: str | None = None
     seo_description: str | None = None
 
-class GitHubImportIn(BaseModel): repo_url: str
-class GitHubCreateIn(BaseModel): repo_url: str; publish: bool = False
+
+class GitHubImportIn(BaseModel):
+    repo_url: str
+
+
+class GitHubCreateIn(BaseModel):
+    repo_url: str
+    publish: bool = False
+
 
 class AIContentIn(BaseModel):
     kind: str = Field(pattern="^(project|album|site|contact)$")
     tone: str = "professional"
     language: str = "th"
     context: dict = Field(default_factory=dict)
+
 
 class SettingsIn(BaseModel):
     display_name: str = "BOOM"
@@ -114,7 +134,6 @@ class SettingsIn(BaseModel):
     linkedin_url: str | None = None
     line_url: str | None = None
     youtube_url: str | None = None
-    booking_url: str | None = None
     contact_heading: str = "Let's work together"
     contact_intro: str | None = None
     availability_text: str | None = None
@@ -124,6 +143,7 @@ class SettingsIn(BaseModel):
     site_url: str | None = None
     default_og_image_url: str | None = None
     analytics_id: str | None = None
+
 
 class ContactIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)

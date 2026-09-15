@@ -3,7 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.site_settings (
   id smallint primary key default 1 check (id=1),
   display_name text not null default 'BOOM', headline text not null default 'Developer & Photographer', bio text,
-  email text, phone text, location text, github_url text, instagram_url text, facebook_url text, linkedin_url text, line_url text, youtube_url text, booking_url text,
+  email text, phone text, location text, github_url text, instagram_url text, facebook_url text, linkedin_url text, line_url text, youtube_url text,
   contact_heading text not null default 'Let''s work together', contact_intro text, availability_text text, contact_button_text text not null default 'Send Message', show_contact_form boolean not null default true,
   hero_image_url text, site_url text, default_og_image_url text, analytics_id text, updated_at timestamptz not null default now()
 );
@@ -143,3 +143,6 @@ alter table public.albums add column if not exists download_quality text not nul
 alter table public.album_photos add column if not exists alt_text text;
 alter table public.album_photos add column if not exists is_hidden boolean not null default false;
 alter table public.contact_messages add column if not exists is_archived boolean not null default false;
+
+-- Retired setting from the old scheduling feature.
+alter table public.site_settings drop column if exists booking_url;
