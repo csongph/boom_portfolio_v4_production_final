@@ -10,6 +10,7 @@ from importlib import import_module
 _main = import_module(".main", __name__)
 _booking = import_module(".booking", __name__)
 _gmail = import_module(".gmail_email", __name__)
+_booking_multislot = import_module(".booking_multislot", __name__)
 _qr = import_module(".qr", __name__)
 _drive_fallback = import_module(".drive_fallback", __name__)
 
@@ -22,8 +23,10 @@ _main.optimized_image_bytes = _drive_fallback.optimized_image_bytes
 _main.image_exif = _drive_fallback.image_exif
 _main.warm_cache = _drive_fallback.warm_cache
 
-# Register Gmail's status/test endpoints before booking's compatibility
-# endpoints so FastAPI resolves the Gmail versions for identical paths.
+# Route order matters: Gmail overrides legacy email endpoints, and the
+# multi-slot router overrides legacy single-slot booking endpoints while
+# keeping all compatibility/admin endpoints from booking.py available.
 _main.app.include_router(_gmail.router)
+_main.app.include_router(_booking_multislot.router)
 _main.app.include_router(_booking.router)
 _main.app.include_router(_qr.router)
