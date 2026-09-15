@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from .config import get_settings
 from .database import db
 
-SCOPES="https://www.googleapis.com/auth/drive.readonly"
+SCOPES="https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/gmail.send"
 
 def _fernet():
     key=get_settings().token_encryption_key
@@ -25,7 +25,7 @@ def google_auth_url(admin_email: str):
     s=get_settings()
     if not s.google_client_id or not s.google_oauth_redirect_uri or not s.oauth_state_secret:
         raise HTTPException(503,"Google OAuth is not configured")
-    params={"client_id":s.google_client_id,"redirect_uri":s.google_oauth_redirect_uri,"response_type":"code","scope":SCOPES,"access_type":"offline","prompt":"consent","state":oauth_state(admin_email)}
+    params={"client_id":s.google_client_id,"redirect_uri":s.google_oauth_redirect_uri,"response_type":"code","scope":SCOPES,"access_type":"offline","prompt":"consent","include_granted_scopes":"true","state":oauth_state(admin_email)}
     return str(httpx.URL("https://accounts.google.com/o/oauth2/v2/auth",params=params))
 
 async def google_exchange(code: str):
@@ -41,6 +41,7 @@ def save_google_token(admin_email: str, token: dict):
         try:
             old=json.loads(_fernet().decrypt(existing.data[0]["encrypted_token"].encode()))
             if old.get("refresh_token"): token["refresh_token"]=old["refresh_token"]
+            if old.get("scope") and not token.get("scope"): token["scope"]=old["scope"]
         except Exception: pass
     token["saved_at"] = datetime.now(timezone.utc).timestamp()
     enc=_fernet().encrypt(json.dumps(token).encode()).decode()
@@ -63,8 +64,10 @@ async def google_access_token(admin_email: str):
     s=get_settings()
     async with httpx.AsyncClient(timeout=30) as c:
         r=await c.post("https://oauth2.googleapis.com/token",data={"client_id":s.google_client_id,"client_secret":s.google_client_secret,"refresh_token":refresh,"grant_type":"refresh_token"})
-    if r.is_error: raise HTTPException(401,"Google Drive connection expired; reconnect Google")
-    new=r.json(); new["refresh_token"]=refresh; save_google_token(admin_email,new)
+    if r.is_error: raise HTTPException(401,"Google connection expired; reconnect Google")
+    new=r.json(); new["refresh_token"]=refresh
+    if token.get("scope") and not new.get("scope"): new["scope"]=token["scope"]
+    save_google_token(admin_email,new)
     return new.get("access_token")
 
 async def google_status(admin_email: str):
@@ -73,7 +76,9 @@ async def google_status(admin_email: str):
         return {"connected":False,"healthy":False,"updated_at":None,"message":"Not connected"}
     try:
         await google_access_token(admin_email)
-        return {"connected":True,"healthy":True,"updated_at":r.data[0]["updated_at"],"message":"Connected"}
+        token=load_google_token(admin_email) or {}
+        scopes=set(str(token.get("scope") or "").split())
+        return {"connected":True,"healthy":True,"updated_at":r.data[0]["updated_at"],"message":"Connected","gmail_send":("https://www.googleapis.com/auth/gmail.send" in scopes)}
     except HTTPException as exc:
         return {"connected":False,"healthy":False,"updated_at":r.data[0]["updated_at"],"message":exc.detail,"needs_reconnect":True}
 
