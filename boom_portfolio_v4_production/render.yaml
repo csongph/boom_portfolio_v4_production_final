@@ -41,10 +41,6 @@ services:
         value: 10800
       - key: REDIS_URL
         sync: false
-      - key: GMAIL_SMTP_USER
-        sync: false
-      - key: GMAIL_APP_PASSWORD
-        sync: false
       - key: GMAIL_FROM_NAME
         value: CS PHOTO BY BOOM
       - key: BOOKING_NOTIFICATION_EMAIL
