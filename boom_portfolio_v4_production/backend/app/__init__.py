@@ -45,7 +45,7 @@ def _optimized_seo_document(*, title, description, canonical, image_url, body, s
     page = page.replace(
         '<script src="/static/js/site.js?v=57"></script>',
         '<script src="/static/js/site.js?v=57" defer></script>'
-        '<script src="/static/js/performance.js?v=1" defer></script>'
+        '<script src="/static/js/performance.js?v=2" defer></script>'
         '<script src="/static/js/unified.js?v=2" defer></script>',
     )
     return _main.Response(
