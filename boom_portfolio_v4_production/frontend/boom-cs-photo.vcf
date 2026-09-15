@@ -7,12 +7,21 @@ ORG:CS PHOTO BY BOOM
 TITLE:Photographer
 ADR;TYPE=WORK:;;;Bangkok;;;Thailand
 URL;TYPE=WORK:https://boom-portfolio-v4-production-final.vercel.app/
-URL;TYPE=HOME:https://boom-portfolio-v4-production-final.vercel.app/wallet
+item1.URL:https://boom-portfolio-v4-production-final.vercel.app/photography
+item1.X-ABLabel:Photography Portfolio
+item2.URL:https://boom-portfolio-v4-production-final.vercel.app/booking
+item2.X-ABLabel:Book a Shoot
+item3.URL:https://boom-portfolio-v4-production-final.vercel.app/wallet
+item3.X-ABLabel:Digital Business Card
+item4.URL:https://www.instagram.com/cs.bxxm/
+item4.X-ABLabel:Instagram Main
+item5.URL:https://www.instagram.com/cs.photo_byboom/
+item5.X-ABLabel:Instagram Photography
+item6.URL:https://www.facebook.com/chayanggoon.songphim/
+item6.X-ABLabel:Facebook
+item7.URL:https://github.com/csongph
+item7.X-ABLabel:GitHub
 X-SOCIALPROFILE;TYPE=instagram:https://www.instagram.com/cs.bxxm/
 X-SOCIALPROFILE;TYPE=instagram:https://www.instagram.com/cs.photo_byboom/
-item1.URL:https://www.instagram.com/cs.bxxm/
-item1.X-ABLabel:Instagram Main
-item2.URL:https://www.instagram.com/cs.photo_byboom/
-item2.X-ABLabel:Instagram Photography
 NOTE:Photographer - Portrait\, Event & Fashion
 END:VCARD
