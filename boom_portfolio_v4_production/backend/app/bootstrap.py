@@ -1,11 +1,4 @@
+# Compatibility entrypoint for Render services configured with app.bootstrap:app.
+# The app package registers Booking + Gmail routes once in app/__init__.py,
+# so this module should only re-export the FastAPI application.
 from .main import app
-from . import booking
-from . import gmail_email
-
-# Swap only the email delivery layer; booking data/API remain in booking.py.
-gmail_email.install(booking)
-
-# Gmail status/test routes must be registered before the legacy Resend routes
-# so FastAPI resolves the Gmail endpoints first.
-app.include_router(gmail_email.router)
-app.include_router(booking.router)
