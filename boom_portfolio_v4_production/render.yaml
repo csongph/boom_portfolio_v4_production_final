@@ -41,3 +41,9 @@ services:
         value: 10800
       - key: REDIS_URL
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: BOOKING_NOTIFICATION_EMAIL
+        sync: false
