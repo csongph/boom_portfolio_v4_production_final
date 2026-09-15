@@ -1,10 +1,31 @@
 (()=>{'use strict';
-const CACHE_KEY='csboom_perf_cache_v1';
+const CACHE_KEY='csboom_perf_cache_v2';
 const memory={projects:null,albums:null};
 const transparent='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 function readCache(){try{return JSON.parse(sessionStorage.getItem(CACHE_KEY)||'{}')}catch{return{}}}
 function writeCache(patch){try{sessionStorage.setItem(CACHE_KEY,JSON.stringify({...readCache(),...patch}))}catch{}}
-async function fetchJson(url){const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error(`Request failed (${r.status})`);return r.json()}
+
+// Site settings are identical across public pages. Keep them in the current tab
+// for a few minutes so normal navigation does not wake Render just to redraw the
+// same contact links and profile text.
+const nativeFetch=window.fetch.bind(window);
+window.fetch=async function(input,init){
+  const raw=typeof input==='string'?input:input?.url||'';
+  const method=String(init?.method||input?.method||'GET').toUpperCase();
+  let path='';try{path=new URL(raw,location.origin).pathname}catch{}
+  if(method==='GET'&&path==='/api/settings'){
+    const cached=readCache().settings;
+    if(cached?.data&&Date.now()-cached.saved<300000){
+      return new Response(JSON.stringify(cached.data),{status:200,headers:{'Content-Type':'application/json','X-CSBOOM-Cache':'session'}});
+    }
+    const response=await nativeFetch(input,init);
+    if(response.ok)response.clone().json().then(data=>writeCache({settings:{saved:Date.now(),data}})).catch(()=>{});
+    return response;
+  }
+  return nativeFetch(input,init);
+};
+
+async function fetchJson(url){const r=await nativeFetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error(`Request failed (${r.status})`);return r.json()}
 function getProjects(){if(memory.projects)return memory.projects;memory.projects=(async()=>{const cached=readCache().projects;if(cached?.rows?.length&&Date.now()-cached.saved<300000)return cached.rows;const rows=await fetchJson('/api/projects');writeCache({projects:{saved:Date.now(),rows}});return rows})().catch(e=>{memory.projects=null;throw e});return memory.projects}
 function getAlbums(){if(memory.albums)return memory.albums;memory.albums=(async()=>{let cached;try{cached=JSON.parse(localStorage.getItem('csboom_album_cache')||'null')}catch{}if(cached?.rows?.length&&Date.now()-cached.saved<120000)return cached.rows;const rows=await fetchJson('/api/albums');try{localStorage.setItem('csboom_album_cache',JSON.stringify({saved:Date.now(),rows}))}catch{}return rows})().catch(e=>{memory.albums=null;throw e});return memory.albums}
 
@@ -60,14 +81,6 @@ if(typeof window.loadHomeStats==='function'){
       if(photoEl)photoEl.textContent=String(photoCount);
       if(ideaEl)ideaEl.textContent=String((projects||[]).length+photoCount+(albums||[]).length);
     }catch{if(projectEl)projectEl.textContent='0';if(photoEl)photoEl.textContent='0';if(ideaEl)ideaEl.textContent='0'}
-  };
-}
-
-// Neighbour prefetch should use an optimized derivative, not the full Drive original.
-if(typeof window.prefetchNeighbor==='function'&&typeof window.imageVariant==='function'){
-  window.prefetchNeighbor=function(){
-    if(!window.lightboxItems?.length)return;
-    [-1,1].forEach(step=>{const p=window.lightboxItems[(window.lightboxIndex+step+window.lightboxItems.length)%window.lightboxItems.length];if(p){const img=new Image();img.decoding='async';img.src=window.imageVariant(p.image_url,1200,78)}});
   };
 }
 })();
