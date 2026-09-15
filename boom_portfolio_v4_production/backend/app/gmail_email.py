@@ -7,6 +7,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 
 from .config import get_settings
+from .database import db
 from .integrations import google_access_token, google_auth_url, load_google_token
 from .security import require_admin
 
@@ -16,8 +17,55 @@ _s = get_settings()
 GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send"
 
 
+def _connected_google_owners():
+    try:
+        rows = (
+            db().table("integration_tokens")
+            .select("owner_email")
+            .eq("provider", "google_drive")
+            .execute()
+            .data
+            or []
+        )
+        return [
+            str(row.get("owner_email") or "").strip().lower()
+            for row in rows
+            if str(row.get("owner_email") or "").strip()
+        ]
+    except Exception:
+        return []
+
+
 def _owner_email():
-    return (_s.primary_admin_email or "").strip().lower()
+    """Pick the Google account that actually owns the stored OAuth token.
+
+    GMAIL_API_USER is optional. If absent, prefer PRIMARY_ADMIN_EMAIL when it
+    is connected, then fall back to any connected Google admin account. This
+    avoids a common failure when ADMIN_EMAILS contains multiple addresses.
+    """
+    explicit = os.getenv("GMAIL_API_USER", "").strip().lower()
+    primary = (_s.primary_admin_email or "").strip().lower()
+    connected = _connected_google_owners()
+
+    candidates = []
+    for value in (explicit, primary, *connected):
+        if value and value not in candidates:
+            candidates.append(value)
+
+    # Prefer a connection that already has gmail.send.
+    for owner in candidates:
+        token = load_google_token(owner)
+        scopes = set(str((token or {}).get("scope") or "").split())
+        if token and GMAIL_SEND_SCOPE in scopes:
+            return owner
+
+    # Otherwise return an existing connection so the Admin UI can clearly
+    # request a reconnect/permission upgrade instead of reporting no account.
+    for owner in candidates:
+        if load_google_token(owner):
+            return owner
+
+    return explicit or primary
 
 
 def _gmail_config():
@@ -28,7 +76,8 @@ def _gmail_config():
     scopes = set(str((token or {}).get("scope") or "").split())
     has_scope = GMAIL_SEND_SCOPE in scopes
     return {
-        # Keep the old booking.py compatibility contract, but delivery is Gmail API.
+        # Keep booking.py's existing compatibility contract, but delivery is
+        # Gmail REST API over HTTPS rather than SMTP.
         "api_key": "oauth" if token and has_scope else "",
         "from": formataddr((name, owner)) if owner else "",
         "to": notify,
@@ -57,11 +106,11 @@ def _build_raw_message(cfg, to, subject, html_body, reply_to=None):
 async def _send_email(to, subject, html_body, booking_id=None, reply_to=None):
     cfg = _gmail_config()
     if not cfg["user"]:
-        result = {"sent": False, "error": "PRIMARY_ADMIN_EMAIL is not configured"}
+        result = {"sent": False, "error": "No Google account is configured for Gmail API"}
         _booking._log_email(booking_id, to or "", subject, result)
         return result
     if not cfg["connected"]:
-        result = {"sent": False, "error": "Google account is not connected. Reconnect Google in CMS Integrations."}
+        result = {"sent": False, "error": "Google account is not connected. Connect Google in CMS Integrations."}
         _booking._log_email(booking_id, to or "", subject, result)
         return result
     if not cfg["has_gmail_send_scope"]:
@@ -143,6 +192,7 @@ async def email_status(admin=Depends(require_admin)):
         "needs_reconnect": not configured,
         "reconnect_url": reconnect_url,
         "transport": "HTTPS/443",
+        "google_account": cfg["user"],
     }
 
 
