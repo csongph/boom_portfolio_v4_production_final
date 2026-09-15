@@ -16,16 +16,6 @@
     {"source": "/sitemap.xml", "destination": "https://boom-portfolio-v4-production-final.onrender.com/api/sitemap.xml"}
   ],
   "headers": [
-    {"source": "/boom-cs-photo.vcf", "headers": [
-      {"key": "Content-Type", "value": "text/vcard; charset=utf-8"},
-      {"key": "Content-Disposition", "value": "attachment; filename=CS-PHOTO-BY-BOOM.vcf"},
-      {"key": "Cache-Control", "value": "public, max-age=300"}
-    ]},
-    {"source": "/cs-photo-by-boom-links.txt", "headers": [
-      {"key": "Content-Type", "value": "text/plain; charset=utf-8"},
-      {"key": "Content-Disposition", "value": "attachment; filename=cs-photo-by-boom-links.txt"},
-      {"key": "Cache-Control", "value": "public, max-age=300"}
-    ]},
     {"source": "/cs-photo-by-boom.url", "headers": [
       {"key": "Content-Type", "value": "application/internet-shortcut; charset=utf-8"},
       {"key": "Content-Disposition", "value": "attachment; filename=CS-PHOTO-BY-BOOM.url"},
