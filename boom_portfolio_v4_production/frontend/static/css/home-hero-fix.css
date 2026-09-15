@@ -1,0 +1,140 @@
+/* Home hero visual refinement: remove the stacked-page feel and keep a clean cinematic image. */
+body.home-page .home-visual {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  width: min(100%, 590px);
+  justify-self: end;
+  margin: 0;
+  isolation: isolate;
+}
+
+body.home-page .home-visual::before {
+  content: "";
+  position: absolute;
+  inset: 7% -3% -5% 7%;
+  z-index: -2;
+  border: 1px solid rgba(232, 190, 132, 0.12);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.015);
+  transform: rotate(1.4deg);
+  pointer-events: none;
+}
+
+body.home-page .home-visual::after {
+  content: "";
+  position: absolute;
+  inset: -12% -16% -12% 18%;
+  z-index: -3;
+  background: radial-gradient(circle at 48% 46%, rgba(232, 190, 132, 0.16), transparent 62%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+body.home-page .home-visual-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border: 1px solid rgba(232, 190, 132, 0.16);
+  border-radius: 24px;
+  background: #080a08;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.52);
+}
+
+body.home-page .home-visual-media img,
+body.home-page .home-visual > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: 52% 50%;
+  border: 0;
+  border-radius: 0;
+  filter: saturate(.82) contrast(1.04) brightness(.84);
+  transform: scale(1.015);
+}
+
+body.home-page .home-visual-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(2, 4, 3, .82) 0%, rgba(2, 4, 3, .38) 18%, transparent 44%),
+    linear-gradient(180deg, transparent 60%, rgba(2, 4, 3, .62) 100%);
+  pointer-events: none;
+}
+
+body.home-page .home-visual-badge {
+  right: 22px;
+  bottom: 20px;
+  z-index: 3;
+  max-width: calc(100% - 44px);
+  padding: 10px 13px;
+  border: 1px solid rgba(232, 190, 132, 0.18);
+  border-radius: 10px;
+  background: rgba(7, 9, 7, 0.78);
+  color: rgba(255, 248, 237, 0.74);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 980px) {
+  body.home-page .home-frame {
+    grid-template-columns: minmax(330px, 1fr) minmax(360px, .86fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+
+  body.home-page .home-visual {
+    width: min(100%, 500px);
+  }
+}
+
+@media (max-width: 860px) {
+  body.home-page .home-frame {
+    grid-template-columns: 1fr;
+  }
+
+  body.home-page .home-visual {
+    order: 0;
+    width: min(100%, 520px);
+    justify-self: center;
+    margin: 12px auto 30px;
+    opacity: 1;
+  }
+
+  body.home-page .home-visual-media {
+    aspect-ratio: 16 / 10;
+  }
+
+  body.home-page .home-visual-media img,
+  body.home-page .home-visual > img {
+    object-position: 50% 42%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.home-page .home-visual {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  body.home-page .home-visual::before {
+    inset: 5% -2% -4% 5%;
+    border-radius: 18px;
+  }
+
+  body.home-page .home-visual-media {
+    aspect-ratio: 4 / 3;
+    border-radius: 18px;
+  }
+
+  body.home-page .home-visual-badge {
+    right: 12px;
+    bottom: 12px;
+  }
+}
